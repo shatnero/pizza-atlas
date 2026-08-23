@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pizza Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3EEE1; --surface:#FFFDF8; --ink:#2B241C; --muted:#8A7C64; --line:#E2D8C2;
+    --tomato:#C1442B; --basil:#55703E; --tomato-soft:#F1DAD1; --basil-soft:#DEE6D2;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);background-image:radial-gradient(circle at 1px 1px, rgba(43,36,28,0.05) 1px, transparent 0);background-size:18px 18px;color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:980px;margin:0 auto;padding:24px 18px 60px;}
+  a{color:var(--tomato);cursor:pointer;}
+
+  header{margin-bottom:16px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--tomato);font-weight:600;margin-bottom:6px;}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(32px,7vw,50px);margin:0 0 6px;line-height:0.95;letter-spacing:-0.01em;}
+  h1 em{font-style:italic;color:var(--tomato);}
+  .sub{color:var(--muted);font-size:14px;max-width:60ch;line-height:1.5;}
+
+  .banner{margin-top:16px;display:flex;gap:10px;align-items:flex-start;background:var(--basil-soft);border:1px solid #c9d6b9;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;}
+  .banner .ico{font-size:18px;line-height:1;}
+  .banner b{color:var(--basil);}
+
+  nav.mainnav{display:flex;align-items:center;gap:8px;margin:20px 0 18px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);padding-bottom:14px;}
+  .navtab{font-family:'Fraunces',serif;font-weight:600;font-size:15px;padding:8px 6px;background:none;border:none;color:var(--muted);cursor:pointer;position:relative;}
+  .navtab.active{color:var(--ink);}
+  .navtab.active::after{content:"";position:absolute;left:6px;right:6px;bottom:-15px;height:2px;background:var(--tomato);}
+  .unit-toggle{margin-left:auto;display:flex;gap:4px;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:3px;}
+  .unit-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;border:none;background:none;color:var(--muted);cursor:pointer;}
+  .unit-btn.active{background:var(--ink);color:var(--surface);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap;}
+  .tab{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:0.02em;padding:9px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s ease;}
+  .tab:hover{border-color:var(--tomato);}
+  .tab.active{background:var(--ink);border-color:var(--ink);color:var(--surface);}
+
+  /* Style picker */
+  .style-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:22px;}
+  .style-card{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px 14px 12px;cursor:pointer;transition:all .15s ease;text-align:left;}
+  .style-card:hover{border-color:var(--tomato);}
+  .style-card.active{border-color:var(--ink);background:var(--ink);}
+  .style-card .sc-name{font-family:'Fraunces',serif;font-weight:600;font-size:16px;margin-bottom:1px;}
+  .style-card.active .sc-name{color:var(--surface);}
+  .style-card .sc-region{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--tomato);margin-bottom:6px;}
+  .style-card.active .sc-region{color:#E8A896;}
+  .style-card .sc-tag{font-size:11.5px;color:var(--muted);line-height:1.4;}
+  .style-card.active .sc-tag{color:#C9C0B0;}
+
+  .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;align-items:start;}
+  @media (max-width:760px){.grid{grid-template-columns:1fr;}}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-top:20px;}
+  @media (max-width:760px){.grid2{grid-template-columns:1fr;}}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 16px;}
+  .panel h2{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin:0 0 4px;}
+  .panel .desc{font-size:12.5px;color:var(--muted);margin-bottom:16px;}
+
+  .row{display:grid;grid-template-columns:1fr;gap:6px;padding:12px 0;border-top:1px dashed var(--line);}
+  .row:first-of-type{border-top:none;padding-top:0;}
+  .row-label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;gap:8px;}
+  .row-label .hint{font-weight:400;color:var(--muted);font-size:11.5px;font-family:'IBM Plex Mono',monospace;text-align:right;}
+  .row-inputs{display:flex;align-items:center;gap:10px;}
+  input[type="range"]{flex:1;accent-color:var(--tomato);height:4px;}
+  input[type="number"], input[type="text"]{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;text-align:right;padding:7px 8px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);}
+  input[type="number"]{width:76px;}
+  input[type="number"]:focus, input[type="range"]:focus, input[type="text"]:focus, textarea:focus{outline:2px solid var(--tomato);outline-offset:1px;}
+  .unit{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);width:22px;}
+  .mass-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .mass-field label{display:block;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+  .mass-field input{width:100%;text-align:left;padding:9px 10px;font-size:15px;}
+
+  .note{font-size:12px;color:var(--muted);line-height:1.5;background:var(--basil-soft);border-radius:8px;padding:9px 11px;margin-top:4px;}
+
+  .switchrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px dashed var(--line);}
+  .switchrow:first-of-type{border-top:none;}
+
+  .pref-box{background:#FBF7EC;border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:6px;}
+  .pref-explain{font-size:12.5px;line-height:1.6;color:var(--ink);margin-bottom:10px;}
+  .pref-explain b{color:var(--tomato);}
+  .schedule{font-size:12px;line-height:1.7;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:8px;}
+
+  .size-helper{background:#FBF7EC;border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:14px;}
+  .size-helper .sh-title{font-size:13px;font-weight:600;margin-bottom:8px;}
+  .size-grid{display:grid;gap:10px;margin-bottom:10px;}
+  .size-grid.round{grid-template-columns:1fr 1fr;}
+  .size-grid.rect{grid-template-columns:1fr 1fr 1fr;}
+
+  .ticket-outer{position:sticky;top:16px;}
+  .ticket{background:var(--surface);border:1px solid var(--line);border-radius:14px 14px 0 0;padding:22px 22px 18px;}
+  .ticket h2{font-family:'Fraunces',serif;font-size:19px;margin:0 0 2px;}
+  .ticket .desc{font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .tline{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px dashed var(--line);gap:10px;}
+  .tline:first-of-type{border-top:none;}
+  .tline .tlabel{font-size:13px;font-weight:600;}
+  .tline .tsub{display:block;font-size:10.5px;font-weight:400;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+  .gram-input-wrap{display:flex;align-items:baseline;gap:3px;}
+  .gram-input-wrap input{width:88px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:17px;text-align:right;border:none;border-bottom:2px solid var(--line);border-radius:0;background:transparent;padding:2px 0;}
+  .gram-input-wrap input:focus{outline:none;border-bottom-color:var(--tomato);}
+  .gram-input-wrap .g{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+  .tline.total .tlabel{font-family:'Fraunces',serif;font-size:16px;}
+  .tline.total .gram-input-wrap input{font-size:19px;color:var(--tomato);}
+  .tear{height:13px;background-image:linear-gradient(135deg, var(--bg) 50%, transparent 50%),linear-gradient(45deg, var(--bg) 50%, transparent 50%);background-size:16px 13px;background-position:0 0, 8px 0;background-repeat:repeat-x;background-color:var(--surface);}
+  .tip{margin-top:16px;padding:12px 14px;background:var(--tomato-soft);border-radius:10px;font-size:12.5px;line-height:1.55;}
+  .tip b{color:var(--tomato);}
+  .tip a{font-weight:600;text-decoration:underline;}
+
+  .savebar{display:flex;gap:8px;margin-top:14px;}
+  .savebar input[type=text]{flex:1;width:auto;text-align:left;font-weight:500;font-family:'Inter',sans-serif;font-size:13px;}
+  .btn{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px;letter-spacing:0.02em;padding:9px 14px;border-radius:8px;border:1.5px solid var(--ink);background:var(--ink);color:var(--surface);cursor:pointer;white-space:nowrap;}
+  .btn.ghost{background:var(--surface);color:var(--ink);}
+  .btn.danger{background:var(--surface);color:var(--tomato);border-color:var(--tomato);}
+  .btn.small{padding:6px 10px;font-size:11px;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .wiki-panel{display:none;}
+  .wiki-panel.active{display:block;}
+  .wtop-panel{display:none;}
+  .wtop-panel.active{display:block;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px;}
+  .card h3{font-family:'Fraunces',serif;font-size:20px;margin:0 0 2px;}
+  .card .region{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--tomato);margin-bottom:12px;}
+  .card h4{font-family:'Fraunces',serif;font-size:15px;margin:16px 0 6px;color:var(--tomato);}
+  .card p{font-size:14px;line-height:1.65;margin:0 0 10px;}
+  .card ul, .card ol{font-size:14px;line-height:1.65;padding-left:20px;margin:0 0 10px;}
+  .card li{margin-bottom:6px;}
+  table.wikitable{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;}
+  table.wikitable th{font-family:'IBM Plex Mono',monospace;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);padding:6px 8px;border-bottom:1.5px solid var(--line);}
+  table.wikitable td{padding:9px 8px;border-bottom:1px dashed var(--line);vertical-align:top;}
+  .callout{background:var(--basil-soft);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55;margin:12px 0;}
+  .callout.warn{background:var(--tomato-soft);}
+  .callout b{color:var(--basil);}
+  .callout.warn b{color:var(--tomato);}
+  .src-line{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--muted);line-height:1.6;}
+  .src-line a{font-weight:600;text-decoration:underline;}
+  .source-item{border-top:1px dashed var(--line);padding:14px 0;}
+  .source-item:first-of-type{border-top:none;padding-top:0;}
+  .source-item .src-title{font-family:'Fraunces',serif;font-weight:600;font-size:15px;margin-bottom:2px;}
+  .source-item .src-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:6px;}
+  .source-item .src-desc{font-size:13.5px;line-height:1.55;}
+
+  .nb-form{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;}
+  .nb-form input[type=text]{width:100%;text-align:left;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;margin-bottom:8px;}
+  .nb-form textarea{width:100%;min-height:90px;font-family:'Inter',sans-serif;font-size:13.5px;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;resize:vertical;margin-bottom:10px;}
+  .nb-list{display:flex;flex-direction:column;gap:10px;}
+  .nb-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .nb-item .nb-title{font-family:'Fraunces',serif;font-weight:600;font-size:15px;margin-bottom:2px;}
+  .nb-item .nb-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .nb-item .nb-body{font-size:13px;line-height:1.5;color:var(--ink);white-space:pre-wrap;margin-bottom:10px;}
+  .nb-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .nb-actions .btn{padding:6px 10px;font-size:11.5px;}
+  .empty-state{font-size:13px;color:var(--muted);padding:20px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:12px;}
+
+  .top-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .top-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;color:var(--muted);padding:4px 6px;border-bottom:1.5px solid var(--line);}
+  .top-table td{padding:8px 6px;border-bottom:1px dashed var(--line);}
+  .top-table td.num{font-family:'IBM Plex Mono',monospace;font-weight:700;text-align:right;}
+
+  .temp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px;}
+  .temp-field label{display:block;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px;}
+  .temp-field .row-inputs{display:flex;align-items:center;gap:6px;}
+  .temp-field input{width:100%;text-align:left;padding:8px 9px;font-size:14px;}
+  .temp-result{margin-top:14px;padding:16px;background:var(--basil-soft);border-radius:10px;text-align:center;}
+  .temp-result .num{font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--basil);}
+  .temp-result .lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+  .presets{display:flex;gap:8px;margin:8px 0 4px;}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);font-size:13px;font-family:'Inter',sans-serif;padding:10px 18px;border-radius:999px;opacity:0;transition:all .25s ease;pointer-events:none;z-index:50;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  footer{margin-top:24px;font-size:11.5px;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Farina · Acqua · Sale · Lievito — Sette Stili</div>
+    <h1>The Pizza <em>Atlas</em></h1>
+    <div class="sub">One baker's-percentage dough engine, seven pizza styles. Pick a style below — every field still edits every other field, exactly like Impasto always has.</div>
+    <div class="banner">
+      <span class="ico">📏</span>
+      <div id="styleFactText"><b>Rule of thumb:</b> loading…</div>
+    </div>
+  </header>
+
+  <nav class="mainnav" id="mainnav">
+    <button class="navtab active" data-view="calculator">Calculator</button>
+    <button class="navtab" data-view="wiki">Wiki</button>
+    <button class="navtab" data-view="notebook">Notebook</button>
+    <div class="unit-toggle" id="unitToggle">
+      <button class="unit-btn active" data-unit="metric">Metric · °C</button>
+      <button class="unit-btn" data-unit="us">US · °F</button>
+    </div>
+  </nav>
+
+  <!-- ================= CALCULATOR VIEW ================= -->
+  <div class="view active" id="view-calculator">
+
+    <div class="style-grid" id="styleGrid"></div>
+
+    <div class="tabs" id="leaventabs">
+      <button class="tab active" data-type="fresh">Fresh yeast</button>
+      <button class="tab" data-type="dry">Dry yeast</button>
+      <button class="tab" data-type="sourdough" id="tabSourdough">Sourdough starter</button>
+    </div>
+
+    <div class="grid">
+      <!-- CONTROLS -->
+      <div class="panel">
+        <h2>La Teglia</h2>
+        <div class="desc" id="teglieDesc">How much dough you need</div>
+
+        <div class="mass-grid">
+          <div class="mass-field"><label id="lblCount">Balls</label><input type="number" id="balls" min="1" step="1"></div>
+          <div class="mass-field"><label id="lblWpb">g / ball</label><input type="number" id="weightPerBall" min="1" step="1"></div>
+          <div class="mass-field"><label id="lblTotal">Total dough (g)</label><input type="number" id="totalDough" min="1" step="1"></div>
+        </div>
+
+        <div class="row" style="margin-top:14px;">
+          <div class="row-label"><span>Total flour <span class="hint">(100% baker's basis)</span></span></div>
+          <div class="row-inputs"><input type="number" id="flourTotal" step="1" style="width:110px;"><span class="unit" id="unitFlour">g</span></div>
+        </div>
+
+        <div class="size-helper">
+          <div class="sh-title">📐 Suggest weight from size</div>
+          <div class="size-grid round" id="sizeRound">
+            <div class="mass-field"><label id="lblDiam">Diameter</label><input type="number" id="panDiameter" step="0.5"></div>
+            <div class="mass-field"><label id="lblTF1">Thickness factor</label><input type="number" id="panTF_r" step="0.01"></div>
+          </div>
+          <div class="size-grid rect" id="sizeRect" style="display:none;">
+            <div class="mass-field"><label id="lblLen">Length</label><input type="number" id="panLength" step="0.5"></div>
+            <div class="mass-field"><label id="lblWid">Width</label><input type="number" id="panWidth" step="0.5"></div>
+            <div class="mass-field"><label id="lblTF2">Thickness factor</label><input type="number" id="panTF_c" step="0.01"></div>
+          </div>
+          <button class="btn ghost small" id="applySizeBtn">Use this weight →</button>
+          <div class="note">Thickness factor = dough weight ÷ pan area — a real pizzeria-industry concept (see Sources). Higher TF = thicker crust. Style default is pre-filled; tweak it if you like a thicker or thinner bake.</div>
+        </div>
+
+        <h2 style="margin-top:18px;">Percentuali</h2>
+        <div class="desc">Baker's percentage of total flour</div>
+
+        <div class="row">
+          <div class="row-label"><span>Hydration</span><span class="hint" id="hydrationHint"></span></div>
+          <div class="row-inputs"><input type="range" id="hydrationRange" min="40" max="95" step="0.5"><input type="number" id="hydration" step="0.5" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+        <div class="row">
+          <div class="row-label"><span>Salt</span><span class="hint">2–3% is typical across styles</span></div>
+          <div class="row-inputs"><input type="range" id="saltRange" min="0" max="4" step="0.1"><input type="number" id="salt" step="0.1" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+        <div class="row">
+          <div class="row-label"><span id="oilLabel">Olive oil</span><span class="hint" id="oilHint"></span></div>
+          <div class="row-inputs"><input type="range" id="oilRange" min="0" max="40" step="0.1"><input type="number" id="oil" step="0.1" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+        <div class="row">
+          <div class="row-label"><span>Sugar</span><span class="hint" id="sugarHint"></span></div>
+          <div class="row-inputs"><input type="range" id="sugarRange" min="0" max="3" step="0.1"><input type="number" id="sugar" step="0.1" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+        <div id="cornmealRow" class="row" style="display:none;">
+          <div class="row-label"><span>Cornmeal</span><span class="hint">% of the total flour blend</span></div>
+          <div class="row-inputs"><input type="range" id="cornmealRange" min="0" max="25" step="1"><input type="number" id="cornmeal" step="1" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+
+        <div id="freshRow" class="row">
+          <div class="row-label"><span id="freshLabel">Fresh yeast</span><span class="hint" id="freshHint">↓ for longer / colder ferments</span></div>
+          <div class="row-inputs"><input type="range" id="freshRange" min="0" max="3" step="0.02"><input type="number" id="freshPct" step="0.02" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+        <div id="dryRow" class="row" style="display:none;">
+          <div class="row-label"><span id="dryLabel">Dry (active) yeast</span><span class="hint" id="dryHint">≈ ⅓ of fresh yeast</span></div>
+          <div class="row-inputs"><input type="range" id="dryRange" min="0" max="1.5" step="0.01"><input type="number" id="dryPct" step="0.01" style="width:60px;"><span class="unit">%</span></div>
+          <div class="note" id="dryEquivNote"></div>
+        </div>
+        <div id="starterRow1" class="row" style="display:none;">
+          <div class="row-label"><span>Starter</span><span class="hint">15–30% typical</span></div>
+          <div class="row-inputs"><input type="range" id="starterRange" min="5" max="40" step="1"><input type="number" id="starterPct" step="1" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+        <div id="starterRow2" class="row" style="display:none;">
+          <div class="row-label"><span>Starter hydration</span><span class="hint">100% = equal parts flour/water</span></div>
+          <div class="row-inputs"><input type="range" id="starterHydRange" min="50" max="150" step="5"><input type="number" id="starterHydration" step="5" style="width:60px;"><span class="unit">%</span></div>
+        </div>
+
+        <div id="prefTypeRow" class="switchrow" style="display:block;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Preferment</div>
+          <div class="tabs" id="prefTypeTabs" style="margin-bottom:0;">
+            <button class="tab active" data-pref="none">None</button>
+            <button class="tab" data-pref="poolish">Poolish</button>
+            <button class="tab" data-pref="biga">Biga</button>
+          </div>
+        </div>
+
+        <div id="prefBox" class="pref-box" style="display:none;">
+          <div class="pref-explain"><b>What's a <span id="prefName">poolish</span>?</b> <span id="prefExplain1"></span></div>
+          <div class="pref-explain"><span id="prefExplain2"></span></div>
+          <div class="row" style="padding-top:4px;">
+            <div class="row-label"><span id="prefSizeLabel">Preferment size</span><span class="hint">% of total flour</span></div>
+            <div class="row-inputs"><input type="range" id="prefPctRange"><input type="number" id="prefPct" style="width:60px;"><span class="unit">%</span></div>
+          </div>
+          <div class="row">
+            <div class="row-label"><span id="prefHydLabel">Preferment hydration</span><span class="hint" id="prefHydHint"></span></div>
+            <div class="row-inputs"><input type="range" id="prefHydRange"><input type="number" id="prefHyd" style="width:60px;"><span class="unit">%</span></div>
+          </div>
+          <div class="row">
+            <div class="row-label"><span id="prefYeastLabel">Preferment yeast</span><span class="hint">% of the preferment's own flour</span></div>
+            <div class="row-inputs"><input type="range" id="prefYeastRange"><input type="number" id="prefYeast" style="width:60px;"><span class="unit">%</span></div>
+          </div>
+          <div class="schedule" id="prefSchedule"></div>
+          <div class="note" id="prefTip"></div>
+        </div>
+      </div>
+
+      <!-- TICKET -->
+      <div class="ticket-outer">
+        <div class="ticket">
+          <h2>Il Conto</h2>
+          <div class="desc">What to weigh out</div>
+          <div id="ticketBody"></div>
+          <div class="tline total"><span class="tlabel">Total dough</span><div class="gram-input-wrap"><input type="number" id="ticketTotal" step="1"><span class="g" id="unitTicketTotal">g</span></div></div>
+          <div class="tip" id="flourTip"></div>
+          <div class="savebar">
+            <input type="text" id="recipeName" placeholder="Name this recipe…">
+            <button class="btn" id="saveRecipeBtn">Save to Notebook</button>
+          </div>
+        </div>
+        <div class="tear"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h2>🌡️ Target Water Temperature</h2>
+        <div class="desc" id="tempFormulaDesc">3-factor formula — set a target dough temp, tell it your kitchen, it tells you the water.</div>
+        <div class="temp-grid">
+          <div class="temp-field"><label>Desired dough temp</label><div class="row-inputs"><input type="number" id="tDesired" step="1"><span class="unit" id="unitTDesired">°C</span></div></div>
+          <div class="temp-field"><label>Room temp</label><div class="row-inputs"><input type="number" id="tRoom" step="1"><span class="unit" id="unitTRoom">°C</span></div></div>
+          <div class="temp-field"><label>Flour temp</label><div class="row-inputs"><input type="number" id="tFlour" step="1"><span class="unit" id="unitTFlour">°C</span></div></div>
+          <div class="temp-field"><label>Friction factor</label><div class="row-inputs"><input type="number" id="tFriction" step="1"><span class="unit" id="unitTFriction">°C</span></div></div>
+        </div>
+        <div id="tPrefermentField" class="temp-field" style="display:none;margin-bottom:6px;">
+          <label>Starter / preferment temp</label><div class="row-inputs"><input type="number" id="tPreferment" step="1"><span class="unit" id="unitTPreferment">°C</span></div>
+        </div>
+        <div class="presets">
+          <button class="btn ghost small" id="frictionHand">Hand kneading</button>
+          <button class="btn ghost small" id="frictionMachine">Stand mixer</button>
+        </div>
+        <div class="temp-result">
+          <div class="num" id="tResult">—</div>
+          <div class="lbl">target water temperature</div>
+        </div>
+        <div class="note" style="margin-top:10px;">Friction factor is the heat kneading adds to the dough — it varies by method and machine, so dial it in over a few bakes: measure your actual dough temp after mixing and adjust the friction number until the formula predicts it correctly next time.</div>
+      </div>
+
+      <div class="panel">
+        <h2 id="topTitle">🧀 Toppings</h2>
+        <div class="desc" id="topDesc">Scaled from this style's baseline size above</div>
+        <table class="top-table">
+          <thead><tr><th></th><th style="text-align:right;">Per <span id="topUnitNoun">pizza</span></th><th style="text-align:right;">Batch (×<span id="topBalls"></span>)</th></tr></thead>
+          <tbody id="topBody"></tbody>
+        </table>
+        <div class="note" id="topNote">A starting ratio, not a rule — adjust to taste.</div>
+      </div>
+    </div>
+
+    <footer>
+      All fields are baker's percentages of total flour weight (including any flour inside a starter or preferment). Editing a percentage or a gram amount keeps total flour fixed and lets total dough weight float; editing balls/pans, weight per unit, or total dough weight keeps percentages fixed and solves for flour. Every style's defaults are a well-sourced starting point (see Wiki → Sources), not a single rigid formula — home ovens, flours, and climates vary.
+    </footer>
+  </div>
+
+  <!-- ================= WIKI VIEW ================= -->
+  <div class="view" id="view-wiki">
+    <div class="tabs" id="wikiTopTabs">
+      <button class="tab active" data-wtop="general">General Knowledge</button>
+      <button class="tab" data-wtop="styles">Style Guides</button>
+      <button class="tab" data-wtop="sources">Sources & Reading</button>
+    </div>
+
+    <!-- GENERAL -->
+    <div class="wtop-panel active" id="wtop-general">
+      <div class="tabs" id="wikitabs">
+        <button class="tab active" data-wiki="ferment">Fermentation & Timing</button>
+        <button class="tab" data-wiki="flour">Flour & Hydration</button>
+        <button class="tab" data-wiki="method">Method, Step by Step</button>
+        <button class="tab" data-wiki="knead">Kneading</button>
+        <button class="tab" data-wiki="sauce">The Sauce</button>
+        <button class="tab" data-wiki="bake">Baking Science</button>
+      </div>
+
+      <div class="wiki-panel active" id="wiki-ferment">
+        <div class="card">
+          <h3>Fermentation & timing</h3>
+          <p>Dough ferments in two separate stages that both matter across every style in this atlas: <b>bulk fermentation</b> (the whole mass rising after mixing) and <b>ball/pan proof</b> — <i>staglio</i> for a ball — after dividing and shaping. The right yeast amount depends entirely on how long you plan to wait between the two.</p>
+          <table class="wikitable">
+            <tr><th>Method</th><th>Yeast level</th><th>Total time</th><th>Best for</th></tr>
+            <tr><td>Same-day</td><td>High — 1.5–3% fresh / 0.5–1% dry</td><td>4–8h room temp</td><td>No planning ahead</td></tr>
+            <tr><td>Next-day</td><td>Medium — 0.3–0.6% fresh / 0.1–0.2% dry</td><td>18–24h (fridge or room temp)</td><td>Best everyday balance</td></tr>
+            <tr><td>Long cold ferment</td><td>Low — 0.05–0.15% fresh</td><td>48–72h fridge + 3–4h to finish</td><td>Maximum flavour</td></tr>
+            <tr><td>Poolish</td><td>Tiny in preferment, little/none after</td><td>8–16h preferment + 2–6h final</td><td>Flavour boost, no live culture</td></tr>
+            <tr><td>Biga</td><td>Low-moderate in preferment</td><td>16–24h cool + short final ferment</td><td>Strong, elastic, deeper flavour</td></tr>
+            <tr><td>Sourdough</td><td>Wild culture, 15–30% starter</td><td>Varies a lot — trust the dough</td><td>Most complex flavour</td></tr>
+          </table>
+          <h4>Temperature is your dial</h4>
+          <p>Yeast activity roughly doubles for every 8–10°C (15–18°F) rise. A fridge (~4°C/39°F) nearly stops it, letting you stretch fermentation over days without over-proofing. Pull dough out of the fridge 1.5–2h before shaping.</p>
+          <h4>Reading the dough</h4>
+          <ul>
+            <li><b>Ready:</b> puffy and jiggly, holds a light finger-dent that springs back about halfway.</li>
+            <li><b>Under-proofed:</b> tight, springs back fully and immediately.</li>
+            <li><b>Over-proofed:</b> slack, sticky, tears rather than stretches.</li>
+          </ul>
+          <div class="callout">Time on a recipe card is a guess. Use the <a onclick="jumpToView('calculator')">Calculator</a>'s water-temperature tool to hit a consistent dough temp so a given schedule means the same thing every time.</div>
+          <div class="src-line">Sources: AVPN Disciplinare · Forkish, <i>Flour Water Salt Yeast</i> & <i>The Elements of Pizza</i> · Myhrvold & Migoya, <i>Modernist Pizza</i>. <a onclick="jumpToWiki('sources')">Full list →</a></div>
+        </div>
+      </div>
+
+      <div class="wiki-panel" id="wiki-flour">
+        <div class="card">
+          <h3>Flour & hydration</h3>
+          <p>Flour strength sets a ceiling on how much water it can hold without the dough collapsing. Italian "00"/"0" flour is rated by <b>W</b> (alveograph strength); American styles instead specify flour by <b>protein %</b> — different measurement traditions for a related idea.</p>
+          <h4>"00", "0", "1" — a grind, not a strength</h4>
+          <p>The tipo number describes milling fineness and bran removal, not gluten strength. A bag can be tipo 00 and either weak or very strong — the number alone doesn't tell you.</p>
+          <h4>W and protein %</h4>
+          <p>W measures the energy needed to inflate a bubble of dough until it bursts — the best single predictor of how a dough handles water and time. American "bread flour" or "high-gluten flour" labelling (11–14% protein) serves a similar purpose for the styles that use it.</p>
+          <table class="wikitable">
+            <tr><th>Hydration</th><th>Recommended W</th><th>Ferment length</th><th>Typical flour</th></tr>
+            <tr><td>45–60%</td><td>200–260</td><td>Same-day to next-day</td><td>Standard pizza flour</td></tr>
+            <tr><td>60–68%</td><td>260–300</td><td>18–24h</td><td>Medium-strong flour / bread flour</td></tr>
+            <tr><td>68–80%</td><td>300–330</td><td>24–48h</td><td>Strong flour / high-gluten blends</td></tr>
+            <tr><td>80%+</td><td>330–400+</td><td>24–72h+, often with a preferment</td><td>High-strength blends, biga/poolish essential</td></tr>
+          </table>
+          <h4>P/L — tenacity vs. extensibility</h4>
+          <p>Lower P/L (roughly 0.5–0.6) means a more extensible dough that relaxes and stretches instead of springing back — generally preferable for hand-shaped styles.</p>
+          <div class="callout warn"><b>The practical rule:</b> if a bag doesn't state W or protein %, and you're not sure it's a dedicated pizza/bread flour, keep hydration modest and the ferment short. Save high hydration and multi-day ferments for a flour with real stated strength.</div>
+          <div class="src-line">Sources: AVPN Disciplinare · Myhrvold & Migoya, <i>Modernist Pizza</i> · published mill data sheets (Molino Pasini, Molino Spadoni). <a onclick="jumpToWiki('sources')">Full list →</a></div>
+        </div>
+      </div>
+
+      <div class="wiki-panel" id="wiki-method">
+        <div class="card">
+          <h3>Method, step by step</h3>
+          <ol>
+            <li><b>Mise en place.</b> Weigh everything. Use the <a onclick="jumpToView('calculator')">water-temperature tool</a> to hit a consistent dough temp regardless of season.</li>
+            <li><b>Mix.</b> Dissolve yeast into the water first. Combine most of the water with the flour, work in salt, then stream in fat last once the dough is coming together.</li>
+            <li><b>Optional autolyse.</b> Rest flour and water together 20–30 minutes before adding salt/yeast/fat — hydrates the flour and jump-starts gluten with less kneading.</li>
+            <li><b>Knead</b> until smooth and elastic (see Kneading).</li>
+            <li><b>Bulk ferment,</b> covered airtight, until roughly doubled.</li>
+            <li><b>Divide & shape.</b> Ball for round styles, or press directly into an oiled pan for pan styles.</li>
+            <li><b>Proof</b> per the fermentation table, then shape/stretch/dimple per the style's own technique — see Style Guides.</li>
+            <li><b>Top and bake</b> per the style's own order and timing — this varies more between styles than almost anything else.</li>
+          </ol>
+          <div class="src-line">Sources: Gemignani, <i>The Pizza Bible</i> · Vetri & Joachim, <i>Mastering Pizza</i> · AVPN Disciplinare. <a onclick="jumpToWiki('sources')">Full list →</a></div>
+        </div>
+      </div>
+
+      <div class="wiki-panel" id="wiki-knead">
+        <div class="card">
+          <h3>Kneading best practices</h3>
+          <h4>By hand</h4>
+          <p>For high-hydration dough (65%+), <b>slap and fold</b> beats push-and-fold: lift, slap down, fold over, rotate, repeat 8–10 minutes. Develops gluten without extra bench flour quietly raising your hydration back down. Very stiff low-hydration doughs (Chicago, Roman Tonda) instead knead more like a bread dough or laminated pastry — see that style's own guide.</p>
+          <h4>By machine</h4>
+          <p>Low speed with a spiral or dough hook. Mix until the dough clears the bowl and feels smooth, 6–10 minutes. Over-mixing raises dough temperature via friction (see the water-temperature tool).</p>
+          <h4>The windowpane test</h4>
+          <p>Stretch a small piece thin between your fingers — a thin, translucent sheet without tearing means gluten development is sufficient.</p>
+          <div class="callout warn"><b>Common mistakes:</b> too much bench flour on a sticky dough; kneading well past windowpane; starting with too-warm water or over-mixing by machine.</div>
+          <div class="src-line">Sources: Forkish, <i>The Elements of Pizza</i> · Myhrvold & Migoya, <i>Modernist Pizza</i>. <a onclick="jumpToWiki('sources')">Full list →</a></div>
+        </div>
+      </div>
+
+      <div class="wiki-panel" id="wiki-sauce">
+        <div class="card">
+          <h3>Sauce, across styles</h3>
+          <p>Classic Neapolitan and Roman sauces are <b>uncooked</b>: hand-crush whole peeled tomatoes, salt, maybe oregano/basil, a drizzle of oil. American styles (NY, Sicilian, Chicago) more often use a lightly cooked, sometimes chunky, sauce, and Detroit applies it in raw cold stripes <i>after</i> baking.</p>
+          <h4>Skip passata</h4>
+          <p>Pre-made "pizza sauce" or passata is smoother and often pre-seasoned or reduced, throwing off both texture and balance. Hand-crushed or coarsely blended whole tomatoes keep texture and don't oversaturate the dough.</p>
+          <h4>Drain the excess water</h4>
+          <p>Let crushed tomatoes sit in a sieve for a few minutes, especially for longer, cooler home-oven bakes — excess liquid becomes steam and softens the crust.</p>
+          <div class="callout">Quantity and placement are where styles diverge most — see each Style Guide for specifics (amount, whether it's applied before or after baking, and what it's layered against).</div>
+          <div class="src-line">Sources: AVPN Disciplinare · Consorzio San Marzano DOP · Reinhart, <i>American Pie</i>. <a onclick="jumpToWiki('sources')">Full list →</a></div>
+        </div>
+      </div>
+
+      <div class="wiki-panel" id="wiki-bake">
+        <div class="card">
+          <h3>Baking science</h3>
+          <table class="wikitable">
+            <tr><th>Oven type</th><th>Typical floor temp</th><th>Bake time</th></tr>
+            <tr><td>Wood-fired (masonry)</td><td>430–480°C / 800–900°F</td><td>60–90 seconds</td></tr>
+            <tr><td>Outdoor gas / pellet</td><td>~450–500°C / 840–930°F</td><td>60–90 seconds</td></tr>
+            <tr><td>Home oven + steel/stone</td><td>250–300°C / 480–570°F max</td><td>5–25 minutes depending on style</td></tr>
+          </table>
+          <h4>Steel vs. stone</h4>
+          <p>Steel conducts heat far faster than stone — usually a better bottom crust and more browning in a home oven that can't reach wood-fired temperatures. Stone closes the gap at genuinely high-temp ovens.</p>
+          <h4>Preheat longer than feels necessary</h4>
+          <p>A stone, steel, or pan needs real time to saturate with heat — 45–60 minutes at maximum oven temperature is standard advice, not overkill.</p>
+          <div class="callout">Hotter and faster reads more "Neapolitan"; cooler and longer moves toward American pan-style territory. Neither is wrong — see each Style Guide for the specific target.</div>
+          <div class="src-line">Sources: AVPN Disciplinare · Myhrvold & Migoya, <i>Modernist Pizza</i> · Gemignani, <i>The Pizza Bible</i>. <a onclick="jumpToWiki('sources')">Full list →</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STYLE GUIDES -->
+    <div class="wtop-panel" id="wtop-styles">
+      <div class="tabs" id="styleWikiTabs"></div>
+      <div id="styleWikiBody"></div>
+    </div>
+
+    <!-- SOURCES -->
+    <div class="wtop-panel" id="wtop-sources">
+      <div class="card">
+        <h3>Sources & further reading</h3>
+        <p>Nothing on this site's ranges, defaults, or explanations should be taken as coming from nowhere. The Atlas synthesizes one official standard, several well-regarded books, established test kitchens, and one long-running technical community, then adapts them for home kitchens. Each Wiki page and Style Guide links back to the specific sources behind it; this page is the full list.</p>
+
+        <h4>The one official standard</h4>
+        <p>The <b>Associazione Verace Pizza Napoletana (AVPN)</b> publishes the only legally recognised specification for "Verace Pizza Napoletana," registered as an EU Traditional Speciality Guaranteed (TSG) under Regulation No. 97/2010: tipo 00/0 flour (W 220–380), 55–62% hydration, 50–55g salt/L water, 200–280g dough balls, wood-fired oven at ~485°C for 60–90 seconds.</p>
+        <div class="callout warn"><b>Every other style in this Atlas is a home-kitchen adaptation of community and published-book consensus, not a single certifying body's spec</b> — American regional styles in particular vary pizzeria to pizzeria far more than Neapolitan does. Treat each Style Guide's numbers as a well-triangulated starting point, not gospel.</div>
+        <p><a href="https://www.pizzanapoletana.org" target="_blank" rel="noopener">pizzanapoletana.org</a> — official AVPN site.</p>
+
+        <h4>Books (span multiple styles)</h4>
+        <div class="source-item"><div class="src-title">The Pizza Bible</div><div class="src-meta">Tony Gemignani · Ten Speed Press, 2014</div><div class="src-desc">Nine regional styles in one volume — Neapolitan, NY, Chicago deep-dish, Sicilian, and more — from a 12-time World Pizza Champion.</div></div>
+        <div class="source-item"><div class="src-title">Flour Water Salt Yeast</div><div class="src-meta">Ken Forkish · Ten Speed Press, 2012 · James Beard & IACP Award winner</div><div class="src-desc">The clearest plain-English walkthrough of baker's percentages and fermentation scheduling anywhere.</div></div>
+        <div class="source-item"><div class="src-title">The Elements of Pizza</div><div class="src-meta">Ken Forkish · Ten Speed Press, 2016</div><div class="src-desc">Pizza-only follow-up: a dozen-plus dough formulas across styles and hydrations.</div></div>
+        <div class="source-item"><div class="src-title">Mastering Pizza</div><div class="src-meta">Marc Vetri & David Joachim · Clarkson Potter/Ten Speed, 2018</div><div class="src-desc">Restaurant-chef precision on shaping and a range of base doughs tuned to different home ovens.</div></div>
+        <div class="source-item"><div class="src-title">Modernist Pizza</div><div class="src-meta">Nathan Myhrvold & Francisco Migoya · The Cooking Lab, 2021 (3 volumes + recipe manual)</div><div class="src-desc">The deepest technical dive available, covering Neapolitan through Detroit, Chicago, Sicilian, and Roman styles with real alveograph and thermal data.</div></div>
+        <div class="source-item"><div class="src-title">American Pie: My Search for the Perfect Pizza</div><div class="src-meta">Peter Reinhart · Ten Speed Press, 2003</div><div class="src-desc">Travelogue and dough theory behind why Neapolitan, Roman, and American styles diverged. Continued at pizzaquest.com.</div></div>
+
+        <h4>Science, test kitchens & ongoing testing</h4>
+        <div class="source-item"><div class="src-title">Serious Eats — "The Food Lab" and pizza archive</div><div class="src-meta">J. Kenji López-Alt et al. · seriouseats.com</div><div class="src-desc">Rigorous, repeated, side-by-side testing across NY, Detroit, Sicilian, and Neapolitan-at-home variables. His book <i>The Food Lab</i> (W. W. Norton, 2015) covers the same method.</div></div>
+        <div class="source-item"><div class="src-title">America's Test Kitchen / Cook's Illustrated</div><div class="src-meta">americastestkitchen.com</div><div class="src-desc">Multiply-tested recipes and technique explanations for Chicago deep-dish and other American styles, with an emphasis on explaining <i>why</i> a technique works.</div></div>
+        <div class="source-item"><div class="src-title">King Arthur Baking</div><div class="src-meta">kingarthurbaking.com</div><div class="src-desc">A flour company with a genuine test kitchen; reliable for Chicago deep-dish and Sicilian technique and ingredient ratios.</div></div>
+
+        <h4>Technical concepts</h4>
+        <div class="source-item"><div class="src-title">Thickness Factor (TF)</div><div class="src-meta">Tom Lehmann ("The Dough Doctor"), PMQ Pizza Magazine · pizzamaking.com community</div><div class="src-desc">The industry concept behind this Atlas's "suggest weight from size" tool: dough weight ÷ pan area. Lehmann was a longtime American Institute of Baking consultant; pizzamaking.com is the oldest and largest home-pizza-maker technical community, in continuous operation since the early 2000s.</div></div>
+
+        <h4>Ingredient provenance & history</h4>
+        <div class="source-item"><div class="src-title">Consorzio di Tutela del Pomodoro San Marzano dell'Agro Sarnese-Nocerino</div><div class="src-meta">San Marzano DOP governing body</div><div class="src-desc">The official body certifying genuine San Marzano DOP tomatoes.</div></div>
+        <div class="source-item"><div class="src-title">Flour mill technical data sheets</div><div class="src-meta">Molino Pasini, Molino Spadoni, and similar mills</div><div class="src-desc">Mills publish their own W, protein, and P/L values per product — more precise than any general table.</div></div>
+        <div class="source-item"><div class="src-title">Wikipedia — regional style histories</div><div class="src-meta">en.wikipedia.org</div><div class="src-desc">Used only for basic, easily-verified origin facts (e.g. Detroit-style's 1946 origin at Buddy's Rendezvous) — treated as a tertiary pointer, not a technical authority.</div></div>
+
+        <h4>Watch & learn (video)</h4>
+        <p>Some steps are genuinely easier to see than to read — cheese pushed to a pan's edges, a biga torn apart by hand, dough lamination. Each Style Guide links a specific example; these are the three creators behind most of them.</p>
+        <div class="source-item"><div class="src-title">Vito Iacopelli</div><div class="src-meta"><a href="https://www.youtube.com/channel/UCopxVPFM021dpp8L6euX-qA" target="_blank" rel="noopener">youtube.com/@vitoiacopelli</a></div><div class="src-desc">A working pizzaiolo (former competition champion) posting weekly Neapolitan-technique videos for years — the deepest single-style video catalogue of the three.</div></div>
+        <div class="source-item"><div class="src-title">Ooni</div><div class="src-meta"><a href="https://www.youtube.com/Oonihq" target="_blank" rel="noopener">youtube.com/Oonihq</a></div><div class="src-desc">The pizza-oven brand's own channel — commercially motivated (it sells ovens), but genuinely useful for side-by-side style comparisons: Neapolitan, NY, Roman, and more, all shot with the same equipment.</div></div>
+        <div class="source-item"><div class="src-title">Joshua Weissman</div><div class="src-meta"><a href="https://www.youtube.com/c/JoshuaWeissman/videos" target="_blank" rel="noopener">youtube.com/@joshuaweissman</a></div><div class="src-desc">A 10M+ subscriber cooking channel with real recipe testing behind it — strongest for the American styles (Chicago, Detroit, NY) in this atlas.</div></div>
+        <div class="callout warn"><b>A caveat, honestly:</b> individual video links rot — creators delete, unlist, or reshoot content. If a linked video is gone, the channel link still works; search the style name on that channel. "Roman pizza" and "pizza al taglio" in particular get used loosely online for both the round and rectangular styles — check which one a video is actually showing before trusting its numbers.</div>
+
+        <h4>Quick online references</h4>
+        <p>For a fast, free, single-page check rather than a book chapter:</p>
+        <div class="source-item"><div class="src-title">King Arthur Baking — Chicago-Style Deep Dish Pizza</div><div class="src-meta"><a href="https://www.kingarthurbaking.com/recipes/chicago-style-deep-dish-pizza-recipe" target="_blank" rel="noopener">kingarthurbaking.com</a></div><div class="src-desc">Step photos of the lamination and pan-forming process.</div></div>
+        <div class="source-item"><div class="src-title">King Arthur Baking — Sicilian-Style Pizza</div><div class="src-meta"><a href="https://www.kingarthurbaking.com/recipes/sicilian-style-pizza-recipe" target="_blank" rel="noopener">kingarthurbaking.com</a></div><div class="src-desc">The stretch-rest-stretch pan technique, photographed step by step.</div></div>
+        <div class="source-item"><div class="src-title">America's Test Kitchen — Chicago Deep-Dish Pizza</div><div class="src-meta"><a href="https://www.americastestkitchen.com/recipes/5033-chicago-style-deep-dish-pizza" target="_blank" rel="noopener">americastestkitchen.com</a></div><div class="src-desc">A multiply-tested recipe with the reasoning behind each step, not just the steps.</div></div>
+        <div class="source-item"><div class="src-title">Wikipedia — Detroit-style pizza / Roman pizza</div><div class="src-meta"><a href="https://en.wikipedia.org/wiki/Detroit-style_pizza" target="_blank" rel="noopener">en.wikipedia.org</a></div><div class="src-desc">Fast, well-cited overviews of each style's origin and defining traits — a good first stop, not a technical authority.</div></div>
+
+        <div class="callout">Have a source you trust that's missing, or think something here should be corrected? Say so — this list is meant to be checked, argued with, and improved, not taken on faith.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NOTEBOOK VIEW ================= -->
+  <div class="view" id="view-notebook">
+    <div class="tabs" id="notetabs">
+      <button class="tab active" data-note="doughs">My Doughs</button>
+      <button class="tab" data-note="sauces">My Sauces</button>
+      <button class="tab" data-note="notes">My Notes</button>
+    </div>
+    <div class="callout" id="storageModeNote" style="margin-bottom:16px;"></div>
+    <div class="wiki-panel active" id="note-doughs"><div id="doughsList" class="nb-list"></div></div>
+    <div class="wiki-panel" id="note-sauces">
+      <div class="nb-form">
+        <input type="text" id="sauceTitle" placeholder="Sauce name…">
+        <textarea id="sauceBody" placeholder="Recipe, ratios, notes…"></textarea>
+        <div style="display:flex;gap:8px;"><button class="btn" id="sauceSaveBtn">Save</button><button class="btn ghost" id="sauceClearBtn">Clear</button></div>
+      </div>
+      <div id="saucesList" class="nb-list"></div>
+    </div>
+    <div class="wiki-panel" id="note-notes">
+      <div class="nb-form">
+        <input type="text" id="noteTitle" placeholder="Note title…">
+        <textarea id="noteBody" placeholder="Whatever's worth remembering for next time…"></textarea>
+        <div style="display:flex;gap:8px;"><button class="btn" id="noteSaveBtn">Save</button><button class="btn ghost" id="noteClearBtn">Clear</button></div>
+      </div>
+      <div id="notesList" class="nb-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================= UNIT HELPERS ============================= */
+const G_PER_OZ = 28.349523125;
+const CM_PER_IN = 2.54;
+const GCM2_PER_OZIN2 = G_PER_OZ / (CM_PER_IN*CM_PER_IN); // ≈4.394
+function toDisplayWeight(g){ return state.unitSystem==='us' ? g/G_PER_OZ : g; }
+function fromDisplayWeight(v){ return state.unitSystem==='us' ? v*G_PER_OZ : v; }
+function toDisplayTemp(c){ return state.unitSystem==='us' ? (c*9/5+32) : c; }
+function fromDisplayTemp(v){ return state.unitSystem==='us' ? (v-32)*5/9 : v; }
+function toDisplayLength(cm){ return state.unitSystem==='us' ? cm/CM_PER_IN : cm; }
+function fromDisplayLength(v){ return state.unitSystem==='us' ? v*CM_PER_IN : v; }
+function toDisplayTF(gcm2){ return state.unitSystem==='us' ? gcm2/GCM2_PER_OZIN2 : gcm2; }
+function fromDisplayTF(v){ return state.unitSystem==='us' ? v*GCM2_PER_OZIN2 : v; }
+function formatNumber(v){
+  if(v==null || isNaN(v)) return '0';
+  const a=Math.abs(v);
+  if(a<10) return (Math.round(v*100)/100).toString();
+  if(a<100) return (Math.round(v*10)/10).toString();
+  return Math.round(v).toString();
+}
+function fmtWeight(g){ return formatNumber(toDisplayWeight(g)); }
+function parseWeight(v){ return fromDisplayWeight(parseFloat(v)||0); }
+function fmtTemp(c){ return Math.round(toDisplayTemp(c)); }
+function parseTemp(v){ return fromDisplayTemp(parseFloat(v)||0); }
+function fmtLen(cm){ return formatNumber(toDisplayLength(cm)); }
+function parseLen(v){ return fromDisplayLength(parseFloat(v)||0); }
+function fmtTF(gcm2){ const v=toDisplayTF(gcm2); return v<1? (Math.round(v*1000)/1000).toString() : formatNumber(v); }
+function parseTF(v){ return fromDisplayTF(parseFloat(v)||0); }
+function weightUnitLabel(){ return state.unitSystem==='us' ? 'oz' : 'g'; }
+function tempUnitLabel(){ return state.unitSystem==='us' ? '°F' : '°C'; }
+function lenUnitLabel(){ return state.unitSystem==='us' ? 'in' : 'cm'; }
+
+/* ============================= STYLE DEFINITIONS ============================= */
+const STYLES = {
+  neapolitan: {
+    id:'neapolitan', name:'Neapolitan', region:'Naples, Italy',
+    tagline:'Soft, wet-centred, leopard-charred cornicione.',
+    fact:'A 260g ball stretches to roughly a 12″ (30cm) pizza — the classic starting point.',
+    massMode:'ball', massNoun:{s:'ball',p:'balls'},
+    defaultCount:4, defaultWeight:260,
+    panShape:'round', panDefaultD_in:12, tf:{min:0.05,max:0.12,default:0.08},
+    hydration:{min:50,max:90,default:65,hint:'60–65% beginner · 70–80% strong flour + long ferment'},
+    salt:{default:2.8}, oil:{default:2,label:'Olive oil',hint:'0% traditional · ~2% common at home'},
+    sugar:{default:0,hint:'not traditional'},
+    cornmeal:null,
+    fresh:{default:0.3}, dry:{default:0.1},
+    starterDefault:20, starterHydDefault:100,
+    allowSourdough:true, allowPreferment:true, defaultPreferment:'none',
+    doughTempDefault:24,
+    flourTipMode:'wvalue',
+    flourNote:'Tipo "00"/"0" soft wheat, W 220–380 depending on hydration and ferment length.',
+    toppings:[{label:'San Marzano sauce',amt:70,unit:'g'},{label:'Fior di latte mozzarella',amt:90,unit:'g'},{label:'Parmesan, grated',amt:5,unit:'g'},{label:'Fresh basil',amt:4,unit:'leaves'},{label:'Finishing olive oil',amt:3,unit:'ml'}],
+    guide:{
+      history:'The original — protected by the AVPN and registered as an EU Traditional Speciality Guaranteed. Soft, wet-centred, with a tall, airy, leopard-charred rim (cornicione).',
+      dough:'55–65% hydration for the official spec; enthusiasts push to 70–80% with a stronger flour and a long cold ferment. Salt and yeast are the only other required ingredients — oil is not traditional but common in home versions for flavour and browning at lower oven temps.',
+      shaping:'Hand-shaped only — never a rolling pin. Press from the centre outward, leaving the rim untouched so it puffs freely, then stretch over the backs of the hands or on the table.',
+      assembly:'Sauce, then mozzarella, torn basil last (added before or right after baking so it doesn\'t scorch), a drizzle of oil.',
+      baking:'Wood-fired at 430–485°C (800–905°F) for 60–90 seconds, turning every 20–30 seconds. Home ovens can\'t reach this — use a steel, maximum temperature, and a broiler finish; expect 5–9 minutes.',
+      tip:'The single most common home mistake is treating hydration like a difficulty score to maximize. Push it only as far as your flour\'s strength (W value) supports — see Wiki → Flour & Hydration.'
+    },
+    sources:'AVPN Disciplinare · Forkish · Modernist Pizza',
+    watch:{creator:'Vito Iacopelli', url:'https://www.youtube.com/watch?v=xjODclCGtR4', note:'a working pizzaiolo with a huge, dedicated Neapolitan-technique catalogue'}
+  },
+  newyork: {
+    id:'newyork', name:'New York', region:'New York City, USA',
+    tagline:'Large, thin, foldable slices with a chewy crumb.',
+    fact:'~300g of dough ≈ a 14″ pie; ~450g ≈ 18″ — NY dough is sized to the pizza you want.',
+    massMode:'ball', massNoun:{s:'ball',p:'balls'},
+    defaultCount:2, defaultWeight:300,
+    panShape:'round', panDefaultD_in:14, tf:{min:0.06,max:0.12,default:0.09},
+    hydration:{min:58,max:68,default:63,hint:'60–65% is the common range; coarser high-gluten flour absorbs more water than "00"'},
+    salt:{default:2.5}, oil:{default:2.5,label:'Oil',hint:'tenderises the crumb; 2–3% typical'},
+    sugar:{default:1.5,hint:'1–2% aids browning at lower oven temps than wood-fired'},
+    cornmeal:null,
+    fresh:{default:0.2}, dry:{default:0.07},
+    starterDefault:20, starterHydDefault:100,
+    allowSourdough:true, allowPreferment:true, defaultPreferment:'none',
+    doughTempDefault:21,
+    flourTipMode:'fixed',
+    flourNote:'High-gluten bread flour, 13–14% protein (e.g. King Arthur Sir Lancelot, All Trumps) — the higher protein builds the chew and structural strength a large, thin, foldable slice needs. "00" flour is too soft for this style.',
+    toppings:[{label:'Pizza sauce',amt:80,unit:'g'},{label:'Low-moisture mozzarella',amt:110,unit:'g'},{label:'Pepperoni (optional)',amt:20,unit:'g'}],
+    guide:{
+      history:'Descended from Neapolitan immigrant bakers adapting to American flour, coal/gas ovens, and a demand for large, shareable, foldable slices sold by weight and reheated for days.',
+      dough:'High-gluten flour is non-negotiable. Sugar and oil — absent from Neapolitan dough — both help browning and tenderness at the lower temperatures a home or pizzeria deck oven runs versus wood-fire. A 24–72h cold ferment is standard even for a same-day feel, since the dough is mixed the day before service.',
+      shaping:'Hand-stretched or rolled — unlike Neapolitan, a rolling pin is common and accepted for the initial pass, then hand-stretched the rest of the way to size.',
+      assembly:'Sauce spread edge to edge (thin), low-moisture mozzarella, optional toppings. No fresh basil or high-moisture cheese — both would make a slice too wet to fold and eat by hand.',
+      baking:'Baked on a preheated steel or stone at 500–550°F (260–290°C) for 6–10 minutes — hot enough to crisp the bottom before the large, thin crust dries out.',
+      tip:'The fold test is the real quality bar: a properly made NY slice should fold in half lengthwise without cracking the crust or sliding its toppings off.'
+    },
+    sources:'Serious Eats — NY Pizza Lab · The Pizza Bible · Modernist Pizza',
+    watch:{creator:'Ooni', url:'https://www.youtube.com/watch?v=smF801XVE3I', note:"the oven brand's own channel, strong on side-by-side style comparisons"}
+  },
+  romantonda: {
+    id:'romantonda', name:'Roman Tonda', region:'Rome, Italy (Scrocchiarella)',
+    tagline:'Paper-thin, cracker-crisp — Neapolitan\'s deliberate opposite.',
+    fact:'~180g ≈ 12″ (30cm) — the low weight is because the crust rolls out thin, not because the pizza is small.',
+    massMode:'ball', massNoun:{s:'ball',p:'balls'},
+    defaultCount:4, defaultWeight:180,
+    panShape:'round', panDefaultD_in:12, tf:{min:0.03,max:0.08,default:0.055},
+    hydration:{min:50,max:60,default:55,hint:'Deliberately low — this is what makes the crust crisp rather than chewy'},
+    salt:{default:2.5}, oil:{default:2,label:'Olive oil',hint:'small amount aids stretch and texture'},
+    sugar:{default:0,hint:'not traditional'},
+    cornmeal:null,
+    fresh:{default:0.2}, dry:{default:0.07},
+    starterDefault:15, starterHydDefault:100,
+    allowSourdough:true, allowPreferment:true, defaultPreferment:'none',
+    doughTempDefault:24,
+    flourTipMode:'wvalue',
+    flourNote:'Medium-strength "00" flour, W 200–260 — workable rather than extra-elastic, since low hydration and rolling (not stretching) do the rest of the work.',
+    toppings:[{label:'Tomato sauce',amt:50,unit:'g'},{label:'Mozzarella',amt:60,unit:'g'},{label:'Oregano + oil',amt:1,unit:'pinch'}],
+    guide:{
+      history:'Called Scrocchiarella ("the crispy one") in Rome — the round, individual-pizza branch of Roman pizza-making, as distinct from Neapolitan as a cracker is from bread.',
+      dough:'Low hydration (around 55%) is the whole point: it produces a dough that rolls thin evenly and bakes rigid rather than chewy. Toppings are typically more varied and generous than Neapolitan\'s minimalism, since the crust is thin enough not to get soggy under them.',
+      shaping:'The one Italian style where a rolling pin is traditional and expected — roll paper-thin and even, unlike the "never roll" rule elsewhere in this atlas.',
+      assembly:'Whatever you like — Roman tonda toppings range from a plain oil-and-oregano marinara-style to fully loaded, since the thin, dry base holds up well.',
+      baking:'300–350°C (570–660°F) for 2–4 minutes — hot but slightly cooler and a touch longer than Neapolitan, giving the thin base time to dry out fully and snap rather than bend.',
+      tip:'Dock the rolled-out dough lightly with a fork if you want an extra-flat, extra-crisp result with minimal bubbling.'
+    },
+    sources:'The Pizza Bible · Modernist Pizza',
+    watch:{creator:'Ooni', url:'https://www.youtube.com/watch?v=4ARGtjBSAo4', note:'"Roman pizza" is used loosely online — double-check a video is showing thin, rolled tonda and not the rectangular al taglio pan style before following it'}
+  },
+  romanteglia: {
+    id:'romanteglia', name:'Roman al Taglio', region:'Rome, Italy (Pizza in Teglia)',
+    tagline:'Rectangular pan pizza, very high hydration, honeycomb crumb, fried bottom.',
+    fact:'A 30×40cm (12×16″) tray takes roughly 700g of dough — thickness here is genuinely a matter of taste.',
+    massMode:'pan', massNoun:{s:'pan',p:'pans'},
+    defaultCount:1, defaultWeight:700,
+    panShape:'rect', panDefaultL_in:16, panDefaultW_in:12, tf:{min:0.08,max:0.20,default:0.13},
+    hydration:{min:70,max:90,default:80,hint:'75–85% is common; this is the most hydration-dependent style in the atlas'},
+    salt:{default:2.6}, oil:{default:3.5,label:'Olive oil',hint:'oils the tray as much as the dough — 3–4% typical'},
+    sugar:{default:0,hint:'not traditional'},
+    cornmeal:null,
+    fresh:{default:0.15}, dry:{default:0.05},
+    starterDefault:25, starterHydDefault:100,
+    allowSourdough:true, allowPreferment:true, defaultPreferment:'biga',
+    doughTempDefault:24,
+    flourTipMode:'wvalue',
+    flourNote:'Strong flour is non-negotiable — W 300–380 or 13–14% protein bread flour, needed to hold this much water without the dough simply flowing apart.',
+    toppings:[{label:'Tomato sauce',amt:150,unit:'g'},{label:'Mozzarella',amt:200,unit:'g'},{label:'Basil',amt:6,unit:'leaves'}],
+    guide:{
+      history:'Rome\'s bakery-born, by-the-weight rectangular pizza — a different animal from Tonda despite sharing a city. Built on very high hydration and (almost always) a stiff biga preferment.',
+      dough:'75–85% hydration, requiring a genuinely strong flour and — unlike most styles in this atlas — a preferment that\'s close to essential rather than optional: skipping it tends to produce something closer to plain focaccia than the signature open, honeycombed crumb.',
+      shaping:'Never kneaded in the traditional sense at this hydration — the dough is built through extended stretch-and-fold, then poured (not stretched) into a heavily oiled tray and dimpled gently to fill the corners.',
+      assembly:'Topped all the way to the edges, no defined rim. Toppings range from a simple marinara to elaborate combinations, sometimes added partway through or after baking.',
+      baking:'Home oven at maximum (~260°C/500°F) for 18–22 minutes in an oiled steel or aluminium tray — the oil in the tray fries the bottom as it bakes.',
+      tip:'Handle this dough with wet or oiled hands, never extra flour — at 80% hydration, added flour changes the ratio far more than it seems to help with stickiness.'
+    },
+    sources:'Modernist Pizza · The Pizza Bible',
+    watch:{creator:null, url:'https://www.youtube.com/Oonihq', note:'search "pizza al taglio" or "teglia romana" — same naming caveat as Tonda applies; confirm it\'s the rectangular, poured-not-stretched pan style'}
+  },
+  detroit: {
+    id:'detroit', name:'Detroit', region:'Detroit, Michigan, USA',
+    tagline:'Thick, airy crumb with a caramelized cheese "frico" crust to the edges.',
+    fact:'A 10×14″ steel pan takes about 550g of dough for the classic thick, open crumb.',
+    massMode:'pan', massNoun:{s:'pan',p:'pans'},
+    defaultCount:1, defaultWeight:550,
+    panShape:'rect', panDefaultL_in:14, panDefaultW_in:10, tf:{min:0.10,max:0.18,default:0.14},
+    hydration:{min:65,max:75,default:70,hint:'high enough for an open, focaccia-like crumb'},
+    salt:{default:2.2}, oil:{default:2,label:'Oil',hint:'plus the oil coating the pan itself'},
+    sugar:{default:1,hint:'~1% helps the top brown'},
+    cornmeal:null,
+    fresh:{default:0.3}, dry:{default:0.1},
+    starterDefault:20, starterHydDefault:100,
+    allowSourdough:true, allowPreferment:true, defaultPreferment:'none',
+    doughTempDefault:23,
+    flourTipMode:'fixed',
+    flourNote:'Bread flour (11–13% protein) — strong enough to hold 70% hydration and stretch into pan corners without tearing.',
+    toppings:[{label:'Brick cheese (or moz + Jack)',amt:280,unit:'g'},{label:'Pepperoni, cupped',amt:60,unit:'g'},{label:'Sauce (added after baking)',amt:120,unit:'g'}],
+    guide:{
+      history:'Invented in 1946 at Buddy\'s Rendezvous in Detroit by Gus Guerra, who baked it in repurposed blue-steel automotive parts trays — the origin of the style\'s signature pan and crisp, almost-fried edge.',
+      dough:'High hydration (around 70%) for an open, focaccia-like crumb, baked in a heavy steel pan that conducts heat aggressively for a fried bottom crust.',
+      shaping:'Pressed by hand into a well-oiled steel pan, stretched to the corners over one or two rounds with a rest in between — the pan does much of the structural work.',
+      assembly:'Reversed from most pizza: cheese (traditionally Wisconsin brick, cubed) goes directly on the dough and all the way to the pan walls first, so it caramelizes into a "frico" crust against the hot steel; toppings go on the cheese; cold sauce is applied in stripes on top after baking, not before.',
+      baking:'500–550°F (260–290°C). The classic technique is a two-stage bake: 5–6 minutes crust-only, then 10–12 minutes more once the cheese and toppings go on.',
+      tip:'Brick cheese is genuinely hard to find outside Wisconsin — a mix of low-moisture mozzarella and Monterey Jack gets close enough for a home version.'
+    },
+    sources:'Wikipedia — Detroit-style pizza · Serious Eats · Modernist Pizza',
+    watch:{creator:null, url:'https://www.youtube.com/c/JoshuaWeissman/videos', note:'search "Detroit style pizza" — look for the cheese-to-the-edges frico step specifically, since that\'s the part hardest to picture from text alone'}
+  },
+  sicilian: {
+    id:'sicilian', name:'Sicilian', region:'Sicily, Italy → New York, USA',
+    tagline:'Thick, spongy rectangular crust — sfincione\'s Italian-American descendant.',
+    fact:'A 13×18″ half-sheet pan takes about 930g of dough for a hearty ~1″ (2.5cm) crust.',
+    massMode:'pan', massNoun:{s:'pan',p:'pans'},
+    defaultCount:1, defaultWeight:930,
+    panShape:'rect', panDefaultL_in:18, panDefaultW_in:13, tf:{min:0.10,max:0.20,default:0.14},
+    hydration:{min:60,max:75,default:68,hint:'similar demands to Detroit; a bit more forgiving'},
+    salt:{default:2.4}, oil:{default:3,label:'Olive oil',hint:'generously oils the pan for a crisp base'},
+    sugar:{default:0.5,hint:'small amount, optional'},
+    cornmeal:null,
+    fresh:{default:0.3}, dry:{default:0.1},
+    starterDefault:20, starterHydDefault:100,
+    allowSourdough:true, allowPreferment:true, defaultPreferment:'none',
+    doughTempDefault:23,
+    flourTipMode:'fixed',
+    flourNote:'Bread flour, 11–13% protein — similar demands to Detroit. Swapping in 15–25% semolina is a common, texturally distinct variant.',
+    toppings:[{label:'Tomato sauce',amt:250,unit:'g'},{label:'Pecorino Romano',amt:40,unit:'g'},{label:'Low-moisture mozzarella',amt:200,unit:'g'}],
+    guide:{
+      history:'Traces to Sicilian sfincione ("thick sponge") — a focaccia-like base traditionally topped with caciocavallo, onions, anchovies, and breadcrumbs rather than mozzarella. The thick, rectangular, mozzarella-topped version most people know is its Italian-American evolution, especially strong in New York.',
+      dough:'A thick, almost focaccia-like dough at 60–75% hydration, long-fermented in the fridge for flavour and easier handling.',
+      shaping:'Pressed into an oiled half-sheet pan in stages — stretch, rest 10–15 minutes when it resists, stretch again, repeating until it fills the pan corners.',
+      assembly:'Traditionally sauce and strong cheese (pecorino, sometimes caciocavallo) go down before the mozzarella — the reverse of a New York pie — often finished with oregano, and in the most traditional sfincione, breadcrumbs and anchovies instead of mozzarella entirely.',
+      baking:'~500°F (260°C) for 20–25 minutes until deeply golden on the bottom — check by lifting a corner with a spatula.',
+      tip:'This dough freezes well after its first rise — portion and freeze extra for a much faster pan pizza night later.'
+    },
+    sources:'The Kitchn · King Arthur Baking · The Pizza Bible',
+    watch:{creator:null, url:'https://www.kingarthurbaking.com/recipes/sicilian-style-pizza-recipe', note:"King Arthur's recipe page includes step photos for the stretch-rest-stretch pan technique, which is the part worth seeing rather than reading"}
+  },
+  chicago: {
+    id:'chicago', name:'Chicago Deep-Dish', region:'Chicago, Illinois, USA',
+    tagline:'Buttery, laminated crust pressed up a deep pan\'s sides; assembled upside down.',
+    fact:'A 9″ deep round pan takes about 520g of dough to climb the sides properly.',
+    massMode:'pan', massNoun:{s:'pan',p:'pans'},
+    defaultCount:2, defaultWeight:520,
+    panShape:'round', panDefaultD_in:9, tf:{min:0.20,max:0.35,default:0.28},
+    hydration:{min:45,max:58,default:52,hint:'low — this is a laminated, buttery dough, not a hydration-driven one'},
+    salt:{default:1.8}, oil:{default:28,label:'Fat (butter + oil)',hint:'genuinely high — often a butter/olive oil/vegetable oil blend'},
+    sugar:{default:1.5,hint:'aids browning and balances the fat'},
+    cornmeal:{default:14,hint:'% of the total flour blend — for crunch and colour'},
+    fresh:{default:0.4}, dry:{default:0.13},
+    starterDefault:20, starterHydDefault:100,
+    allowSourdough:false, allowPreferment:false, defaultPreferment:'none',
+    doughTempDefault:21,
+    flourTipMode:'fixed',
+    flourNote:'All-purpose flour, not bread flour — this crust is about buttery lamination, not gluten strength. A little cornmeal adds crunch and colour.',
+    toppings:[{label:'Mozzarella, sliced (bottom layer)',amt:250,unit:'g'},{label:'Italian sausage',amt:150,unit:'g'},{label:'Crushed tomato (on top)',amt:250,unit:'g'},{label:'Parmesan',amt:20,unit:'g'}],
+    guide:{
+      history:'Said to originate at Pizzeria Uno in Chicago; a deep, high-walled pan and a laminated, pastry-like dough set it apart from every other style in this atlas.',
+      dough:'Low hydration but very high fat — a butter/olive oil/vegetable oil blend gives the crust its distinctive flaky, cookie-like texture. All-purpose flour is correct here; the structure comes from lamination and fat, not gluten development.',
+      shaping:'Roll the risen dough into a rectangle, spread with softened butter, roll up like a jelly roll, then divide and press into the buttered pan, working it up the sides — this lamination step is what makes the baked layers flaky.',
+      assembly:'Fully reversed from a normal pizza: crust, then cheese (all the way to the walls), then meat/toppings, then a thick, chunky, often uncooked crushed-tomato sauce on top, finished with a little grated Parmesan.',
+      baking:'Buttered dark 9″ round pan (dark pans brown the bottom better). Often parbaked crust-only for 10 minutes at 425°F (220°C), then filled and baked a further 20–30 minutes until the top is bubbling and the crust is deep golden.',
+      tip:'Let it rest 5–10 minutes out of the oven before slicing — deep-dish holds a huge amount of hot filling and needs a moment to set.'
+    },
+    sources:'America\'s Test Kitchen · King Arthur Baking · The Pizza Bible',
+    watch:{creator:'Joshua Weissman', url:'https://www.youtube.com/watch?v=_cXVULu9RvE', note:'shows the butter lamination and upside-down assembly clearly — the two steps this style is hardest to picture from a written recipe'}
+  }
+};
+const STYLE_ORDER = ['neapolitan','newyork','romantonda','romanteglia','detroit','sicilian','chicago'];
+
+/* ============================= STATE ============================= */
+const state = {
+  unitSystem: 'metric',
+  styleId: 'neapolitan',
+  leavenType: 'fresh',
+  balls: 4,
+  flourTotal: null,
+  hydration: 65, salt: 2.8, oil: 2, sugar: 0,
+  freshPct: 0.3, dryPct: 0.1, dryRatio: 3,
+  starterPct: 20, starterHydration: 100,
+  cornmealPct: 0,
+  prefermentType: 'none',
+  preferment: { poolish:{pct:30,hyd:100,yeast:0.1}, biga:{pct:30,hyd:50,yeast:0.8} },
+  temp: { desired:24, room:22, flour:22, friction:2, preferment:22 },
+  panDiameter_cm: 30, panLength_cm: 40, panWidth_cm: 30, panTF_gcm2: 0.08*GCM2_PER_OZIN2,
+};
+function currentStyle(){ return STYLES[state.styleId]; }
+
+const PREF_INFO = {
+  poolish: {
+    label:'poolish',
+    explain1:"A liquid pre-ferment: equal parts flour and water (100% hydration) plus a whisper of yeast, left to ferment slowly for hours before it's mixed into the rest of the dough. It builds flavour and extensibility the way a long cold ferment does, on a faster, more predictable schedule.",
+    explain2:"Total flour, water, salt and oil stay the same as a normal dough at this hydration — the poolish just borrows a portion and ferments it separately first. The final dough usually needs very little (or no) extra yeast, since the poolish is already active.",
+    schedule:'<b>Evening, day 1</b> — mix the poolish, cover, leave 8–16h at room temp (18–21°C/64–70°F) until bubbly and just starting to recede.<br><b>Day 2</b> — mix the poolish into the rest of the dough, then a much shorter bulk ferment and proof.',
+    tip:'Move it to the fridge after 2–3h at room temperature to stretch the pre-ferment stage to 24–48h for a milder, more complex flavour.',
+    pctRange:{min:10,max:50,step:1}, hydRange:{min:80,max:120,step:5}, yeastRange:{min:0.02,max:0.5,step:0.02},
+    hydHint:'100% is standard', readyNote:'ferment 8–16h room temp',
+  },
+  biga: {
+    label:'biga',
+    explain1:"A stiff, low-hydration pre-ferment (45–60% hydration) — more a firm little dough ball than a batter. It ferments cool and slow, building a stronger gluten network and a deeper, slightly winey flavour than a poolish.",
+    explain2:"Total flour, water, salt and oil don't change — a portion just ferments separately first. Biga wants a bit more yeast than poolish and a cool spot rather than full room temperature.",
+    schedule:'<b>Day 1</b> — mix the biga (shaggy and dry, not smooth), cover loosely, leave 16–24h somewhere cool (15–18°C/59–64°F) until domed and cratered.<br><b>Day 2</b> — tear it into pieces by hand and work it into the rest of the dough.',
+    tip:'Colder still (near fridge temperature) stretches a biga to 48h+ for extra depth and a stronger flavour.',
+    pctRange:{min:15,max:50,step:1}, hydRange:{min:40,max:65,step:5}, yeastRange:{min:0.2,max:2,step:0.1},
+    hydHint:'45–60% is typical', readyNote:'ferment 16–24h, cool spot',
+  }
+};
+
+function activeFinalPct(){ return state.leavenType==='fresh' ? state.freshPct : state.dryPct; }
+function setActiveFinalPct(v){ if(state.leavenType==='fresh') state.freshPct=v; else state.dryPct=v; }
+function activePreferment(){ return state.prefermentType==='none' ? null : state.preferment[state.prefermentType]; }
+
+function factor(){
+  const H=state.hydration/100, s=state.salt/100, o=state.oil/100, sg=state.sugar/100;
+  const base=1+H+s+o+sg;
+  if(state.leavenType==='sourdough') return base;
+  const p=activePreferment();
+  if(p){ const Pfrac=p.pct/100, yp=p.yeast/100; return base + Pfrac*yp + activeFinalPct()/100; }
+  return base + activeFinalPct()/100;
+}
+function computeTotal(){ return state.flourTotal*factor(); }
+function solveFlourFromTotal(total){ return total/factor(); }
+
+function breakdown(){
+  const H=state.hydration/100, s=state.salt/100, o=state.oil/100, sg=state.sugar/100;
+  const F=state.flourTotal;
+  const water_total=F*H, saltG=F*s, oilG=F*o, sugarG=F*sg;
+  if(state.leavenType==='sourdough'){
+    const Hs=state.starterHydration/100;
+    const S=F*state.starterPct/100;
+    const FS=S/(1+Hs), WS=S*Hs/(1+Hs);
+    return {F,water_total,saltG,oilG,sugarG,S,FS,WS,F_added:F-FS,water_added:water_total-WS};
+  }
+  const p=activePreferment();
+  if(p){
+    const Pfrac=p.pct/100, Hp=p.hyd/100, yp=p.yeast/100;
+    const PF=F*Pfrac, PW=PF*Hp, PY=PF*yp;
+    const FF=F-PF, FW=water_total-PW;
+    const FY=F*activeFinalPct()/100;
+    return {F,water_total,saltG,oilG,sugarG,PF,PW,PY,FF,FW,FY,prefMass:PF+PW+PY};
+  }
+  const yeastG = F*activeFinalPct()/100;
+  const st=currentStyle();
+  if(st.cornmeal){
+    const cornmealG = F*state.cornmealPct/100;
+    return {F,water_total,saltG,oilG,sugarG,yeastG,cornmealG,wheatFlourG:F-cornmealG};
+  }
+  return {F,water_total,saltG,oilG,sugarG,yeastG};
+}
+
+/* ============================= GENERIC HELPERS ============================= */
+function setVal(id,v){ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=v; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+let toastTimer=null;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+function copyText(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast('Copied to clipboard')).catch(()=>fallbackCopy(text));
+  } else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  try{
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok=document.execCommand('copy'); document.body.removeChild(ta);
+    toast(ok?'Copied to clipboard':'Could not copy — select and copy manually');
+  }catch(e){ toast('Could not copy — select and copy manually'); }
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function jumpToView(view){
+  document.querySelectorAll('.navtab').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  if(view==='notebook') refreshNotebook();
+}
+function jumpToWiki(tab){
+  jumpToView('wiki');
+  document.querySelectorAll('#wikiTopTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.wtop==='general'));
+  document.querySelectorAll('.wtop-panel').forEach(p=>p.classList.toggle('active', p.id==='wtop-general'));
+  document.querySelectorAll('#wikitabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.wiki===tab));
+  document.querySelectorAll('#wtop-general .wiki-panel').forEach(p=>p.classList.toggle('active', p.id==='wiki-'+tab));
+}
+function jumpToStyleGuide(styleId){
+  jumpToView('wiki');
+  document.querySelectorAll('#wikiTopTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.wtop==='styles'));
+  document.querySelectorAll('.wtop-panel').forEach(p=>p.classList.toggle('active', p.id==='wtop-styles'));
+  document.querySelectorAll('#styleWikiTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.styleguide===styleId));
+  document.querySelectorAll('#styleWikiBody .wiki-panel').forEach(p=>p.classList.toggle('active', p.id==='styleguide-'+styleId));
+}
+
+/* ============================= STYLE PICKER ============================= */
+function renderStylePicker(){
+  const grid=document.getElementById('styleGrid');
+  grid.innerHTML = STYLE_ORDER.map(id=>{
+    const st=STYLES[id];
+    return `<button class="style-card${id===state.styleId?' active':''}" data-style="${id}">
+      <div class="sc-name">${st.name}</div>
+      <div class="sc-region">${st.region}</div>
+      <div class="sc-tag">${st.tagline}</div>
+    </button>`;
+  }).join('');
+}
+document.getElementById('styleGrid').addEventListener('click', e=>{
+  const btn=e.target.closest('.style-card'); if(!btn) return;
+  switchStyle(btn.dataset.style);
+});
+function switchStyle(id, silent){
+  const st=STYLES[id];
+  state.styleId=id;
+  state.leavenType='fresh';
+  state.balls=st.defaultCount;
+  state.hydration=st.hydration.default;
+  state.salt=st.salt.default;
+  state.oil=st.oil.default;
+  state.sugar=st.sugar.default;
+  state.freshPct=st.fresh.default;
+  state.dryPct=st.dry.default;
+  state.starterPct=st.starterDefault;
+  state.starterHydration=st.starterHydDefault;
+  state.cornmealPct = st.cornmeal ? st.cornmeal.default : 0;
+  state.prefermentType = st.allowPreferment ? st.defaultPreferment : 'none';
+  state.temp.desired = st.doughTempDefault;
+  // reset size helper to style defaults
+  if(st.panShape==='round'){ state.panDiameter_cm = (st.panDefaultD_in||12)*CM_PER_IN; }
+  else { state.panLength_cm=(st.panDefaultL_in||14)*CM_PER_IN; state.panWidth_cm=(st.panDefaultW_in||10)*CM_PER_IN; }
+  state.panTF_gcm2 = st.tf.default*GCM2_PER_OZIN2;
+  state.flourTotal = solveFlourFromTotal(st.defaultCount*st.defaultWeight);
+  document.getElementById('recipeName').value='';
+  renderStylePicker();
+  updateVisibility();
+  render();
+  if(!silent) toast('Loaded '+st.name+' starting point');
+}
+
+/* ============================= RENDER: CALCULATOR ============================= */
+function render(){
+  const st=currentStyle();
+  const total=computeTotal();
+  const wpb=total/state.balls;
+  const b=breakdown();
+  const wl=weightUnitLabel(), tl=tempUnitLabel(), ll=lenUnitLabel();
+
+  document.getElementById('styleFactText').innerHTML = '<b>Rule of thumb:</b> '+st.fact;
+  document.getElementById('lblCount').textContent = st.massNoun.p[0].toUpperCase()+st.massNoun.p.slice(1);
+  document.getElementById('lblWpb').textContent = wl+' / '+st.massNoun.s;
+  document.getElementById('lblTotal').textContent = 'Total dough ('+wl+')';
+  document.getElementById('unitFlour').textContent = wl;
+  document.getElementById('unitTicketTotal').textContent = wl;
+  document.getElementById('topUnitNoun').textContent = st.massNoun.s;
+  document.getElementById('topTitle').textContent = '🧀 Toppings — '+st.name;
+  ['unitTDesired','unitTRoom','unitTFlour','unitTFriction','unitTPreferment'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=tl;
+  });
+
+  setVal('balls', state.balls);
+  setVal('weightPerBall', fmtWeight(wpb));
+  setVal('totalDough', fmtWeight(total));
+  setVal('flourTotal', fmtWeight(state.flourTotal));
+  setVal('hydration', state.hydration); setVal('hydrationRange', state.hydration);
+  document.getElementById('hydrationHint').textContent = st.hydration.hint||'';
+  setVal('salt', state.salt); setVal('saltRange', state.salt);
+  setVal('oil', state.oil); setVal('oilRange', state.oil);
+  document.getElementById('oilLabel').textContent = st.oil.label||'Oil';
+  document.getElementById('oilHint').textContent = st.oil.hint||'';
+  document.getElementById('oilRange').max = st.oil.label==='Fat (butter + oil)' ? 40 : 6;
+  setVal('sugar', state.sugar); setVal('sugarRange', state.sugar);
+  document.getElementById('sugarHint').textContent = st.sugar.hint||'';
+
+  // pan size helper
+  document.getElementById('sizeRound').style.display = st.panShape==='round' ? 'grid' : 'none';
+  document.getElementById('sizeRect').style.display = st.panShape==='rect' ? 'grid' : 'none';
+  if(st.panShape==='round'){
+    setVal('panDiameter', fmtLen(state.panDiameter_cm));
+    document.getElementById('lblDiam').textContent = 'Diameter ('+ll+')';
+    setVal('panTF_r', fmtTF(state.panTF_gcm2));
+    document.getElementById('lblTF1').textContent = 'Thickness factor ('+(state.unitSystem==='us'?'oz/in²':'g/cm²')+')';
+  } else {
+    setVal('panLength', fmtLen(state.panLength_cm));
+    setVal('panWidth', fmtLen(state.panWidth_cm));
+    document.getElementById('lblLen').textContent = 'Length ('+ll+')';
+    document.getElementById('lblWid').textContent = 'Width ('+ll+')';
+    setVal('panTF_c', fmtTF(state.panTF_gcm2));
+    document.getElementById('lblTF2').textContent = 'TF ('+(state.unitSystem==='us'?'oz/in²':'g/cm²')+')';
+  }
+
+  // cornmeal row
+  const showCorn = !!st.cornmeal;
+  document.getElementById('cornmealRow').style.display = showCorn ? 'grid' : 'none';
+  if(showCorn){ setVal('cornmeal', state.cornmealPct); setVal('cornmealRange', state.cornmealPct); document.getElementById('cornmealRange').max = 25; }
+
+  const dryEquiv = state.dryPct*state.dryRatio;
+  document.getElementById('dryEquivNote').textContent = `≈ ${formatNumber(dryEquiv)}% (${fmtWeight(dryEquiv*state.flourTotal/100)}${wl}) fresh yeast equivalent, at a ${state.dryRatio}:1 ratio`;
+
+  const p=activePreferment();
+  const finalHint = p ? 'often 0 or very small — the preferment is already active' : '↓ for longer / colder ferments';
+  document.getElementById('freshHint').textContent=finalHint;
+  document.getElementById('dryHint').textContent=finalHint;
+  document.getElementById('freshLabel').textContent = p ? 'Final dough yeast (fresh)' : 'Fresh yeast';
+  document.getElementById('dryLabel').textContent = p ? 'Final dough yeast (dry)' : 'Dry (active) yeast';
+
+  if(p){
+    const info=PREF_INFO[state.prefermentType];
+    setVal('prefPct', p.pct); setVal('prefPctRange', p.pct);
+    setVal('prefHyd', p.hyd); setVal('prefHydRange', p.hyd);
+    setVal('prefYeast', p.yeast); setVal('prefYeastRange', p.yeast);
+    document.getElementById('prefName').textContent=info.label;
+    document.getElementById('prefExplain1').textContent=info.explain1;
+    document.getElementById('prefExplain2').textContent=info.explain2;
+    document.getElementById('prefSizeLabel').textContent=info.label[0].toUpperCase()+info.label.slice(1)+' size';
+    document.getElementById('prefHydLabel').textContent=info.label[0].toUpperCase()+info.label.slice(1)+' hydration';
+    document.getElementById('prefYeastLabel').textContent=info.label[0].toUpperCase()+info.label.slice(1)+' yeast';
+    document.getElementById('prefHydHint').textContent=info.hydHint;
+    document.getElementById('prefSchedule').innerHTML=info.schedule;
+    document.getElementById('prefTip').textContent=info.tip;
+  }
+
+  let html='';
+  if(state.leavenType==='sourdough'){
+    html+=ticketLine('Flour to add','flourAddedOut', b.F_added, `+ ${fmtWeight(b.FS)}${wl} flour in starter = ${fmtWeight(b.F)}${wl} total flour`);
+    html+=ticketLine('Starter','starterOut', b.S, `${fmtWeight(b.FS)}${wl} flour + ${fmtWeight(b.WS)}${wl} water @ ${state.starterHydration}% hyd.`);
+    html+=ticketLine('Water to add','waterAddedOut', b.water_added, `+ ${fmtWeight(b.WS)}${wl} in starter = ${fmtWeight(b.water_total)}${wl} total water`);
+    html+=ticketLine('Salt','saltOut', b.saltG);
+    html+=ticketLine(st.oil.label||'Oil','oilOut', b.oilG);
+    if(state.sugar>0 || b.sugarG>0) html+=ticketLine('Sugar','sugarOut', b.sugarG);
+  } else if(p){
+    const info=PREF_INFO[state.prefermentType];
+    const label=info.label[0].toUpperCase()+info.label.slice(1);
+    html+=ticketLine(label,'prefOut', b.prefMass, `${fmtWeight(b.PF)}${wl} flour + ${fmtWeight(b.PW)}${wl} water + ${fmtWeight(b.PY)}${wl} yeast — ${info.readyNote}`);
+    html+=ticketLine('Flour to add','flourAddedOut', b.FF, `+ ${fmtWeight(b.PF)}${wl} flour in ${info.label} = ${fmtWeight(b.F)}${wl} total flour`);
+    html+=ticketLine('Water to add','waterAddedOut', b.FW, `+ ${fmtWeight(b.PW)}${wl} in ${info.label} = ${fmtWeight(b.water_total)}${wl} total water`);
+    html+=ticketLine('Salt','saltOut', b.saltG);
+    html+=ticketLine(st.oil.label||'Oil','oilOut', b.oilG);
+    if(state.sugar>0) html+=ticketLine('Sugar','sugarOut', b.sugarG);
+    html+=ticketLine('Final dough yeast','yeastOut', b.FY);
+  } else {
+    if(st.cornmeal){
+      html+=ticketLine('Flour (all-purpose)','flourOut', b.wheatFlourG, `+ ${fmtWeight(b.cornmealG)}${wl} cornmeal = ${fmtWeight(b.F)}${wl} total flour blend`);
+      html+=ticketLine('Cornmeal','cornmealOut', b.cornmealG);
+    } else {
+      html+=ticketLine('Flour','flourOut', b.F);
+    }
+    html+=ticketLine('Water','waterOut', b.water_total);
+    html+=ticketLine('Salt','saltOut', b.saltG);
+    html+=ticketLine(st.oil.label||'Oil','oilOut', b.oilG);
+    if(state.sugar>0) html+=ticketLine('Sugar','sugarOut', b.sugarG);
+    html+=ticketLine(state.leavenType==='fresh'?'Fresh yeast':'Dry yeast','yeastOut', b.yeastG);
+  }
+  document.getElementById('ticketBody').innerHTML=html;
+  setVal('ticketTotal', fmtWeight(total));
+  bindTicketInputs();
+
+  // flour tip
+  let tip;
+  if(st.flourTipMode==='wvalue'){
+    const h=state.hydration;
+    if(h>=72) tip = `<b>At ${h}% hydration</b> you'll want a strong flour, roughly W 320–380+, and a slow ferment with a preferment — a standard pizza flour will feel slack and tear. <a onclick="jumpToWiki('flour')">More in Wiki → Flour & Hydration</a>`;
+    else if(h>=62) tip = `<b>At ${h}% hydration</b> a medium-strong flour (W 260–310) with an 18–24h ferment gives the best balance. <a onclick="jumpToWiki('flour')">More in Wiki → Flour & Hydration</a>`;
+    else tip = `<b>At ${h}% hydration</b> a standard pizza flour (W 200–260) handles this comfortably. <a onclick="jumpToWiki('flour')">More in Wiki → Flour & Hydration</a>`;
+  } else {
+    tip = `<b>${st.name} flour:</b> ${st.flourNote} <a onclick="jumpToStyleGuide('${st.id}')">Full ${st.name} guide →</a>`;
+  }
+  document.getElementById('flourTip').innerHTML=tip;
+
+  if(!document.getElementById('recipeName').value){
+    document.getElementById('recipeName').placeholder = `${st.name}${p?' + '+PREF_INFO[state.prefermentType].label:''}, ${state.hydration}% hyd.`;
+  }
+
+  renderTemp();
+  renderToppings(wpb);
+}
+function ticketLine(label,id,value,sub){
+  return `<div class="tline"><span class="tlabel">${label}${sub?`<span class="tsub">${sub}</span>`:''}</span>
+    <div class="gram-input-wrap"><input type="number" id="${id}" step="0.1" value="${fmtWeight(value)}"><span class="g">${weightUnitLabel()}</span></div></div>`;
+}
+
+/* ============================= DOUGH EDIT HANDLERS ============================= */
+function setWeightPerBallGrams(g){ state.flourTotal = solveFlourFromTotal(Math.max(1,g)*state.balls); render(); }
+function editBalls(v){ v=Math.max(1,parseInt(v)||1); const oldWpb=computeTotal()/state.balls; state.balls=v; state.flourTotal=solveFlourFromTotal(oldWpb*v); render(); }
+function editWeightPerBall(v){ setWeightPerBallGrams(parseWeight(v)); }
+function editTotalDough(v){ const g=Math.max(1,parseWeight(v)); state.flourTotal=solveFlourFromTotal(g); render(); }
+function editFlourTotal(v){ state.flourTotal=Math.max(1,parseWeight(v)); render(); }
+
+function editHydration(v){ state.hydration=parseFloat(v)||0; render(); }
+function editSalt(v){ state.salt=parseFloat(v)||0; render(); }
+function editOil(v){ state.oil=parseFloat(v)||0; render(); }
+function editSugar(v){ state.sugar=parseFloat(v)||0; render(); }
+function editCornmeal(v){ state.cornmealPct=parseFloat(v)||0; render(); }
+function editFresh(v){ state.freshPct=parseFloat(v)||0; render(); }
+function editDry(v){ state.dryPct=parseFloat(v)||0; render(); }
+function editStarterPct(v){ state.starterPct=parseFloat(v)||0; render(); }
+function editStarterHyd(v){ state.starterHydration=parseFloat(v)||0; render(); }
+function editPrefPct(v){ const p=activePreferment(); if(p){ p.pct=parseFloat(v)||0; render(); } }
+function editPrefHyd(v){ const p=activePreferment(); if(p){ p.hyd=parseFloat(v)||0; render(); } }
+function editPrefYeast(v){ const p=activePreferment(); if(p){ p.yeast=parseFloat(v)||0; render(); } }
+
+function editWaterOut(v){ const g=parseWeight(v); state.hydration=g/state.flourTotal*100; render(); }
+function editWaterAddedOut(v){
+  const g=parseWeight(v); const b=breakdown();
+  const other = state.leavenType==='sourdough' ? b.WS : b.PW;
+  state.hydration=(g+other)/state.flourTotal*100; render();
+}
+function editSaltOut(v){ state.salt=parseWeight(v)/state.flourTotal*100; render(); }
+function editOilOut(v){ state.oil=parseWeight(v)/state.flourTotal*100; render(); }
+function editSugarOut(v){ state.sugar=parseWeight(v)/state.flourTotal*100; render(); }
+function editYeastOut(v){ setActiveFinalPct(parseWeight(v)/state.flourTotal*100); render(); }
+function editStarterOut(v){ state.starterPct=parseWeight(v)/state.flourTotal*100; render(); }
+function editFlourAddedOut(v){
+  const g=parseWeight(v); const b=breakdown();
+  const other = state.leavenType==='sourdough' ? b.FS : (b.PF!=null?b.PF:0);
+  state.flourTotal=g+other; render();
+}
+function editWheatFlourOut(v){
+  const g=parseWeight(v); const st=currentStyle();
+  if(st.cornmeal){ const b=breakdown(); state.flourTotal = g + (b.cornmealG||0); }
+  else { state.flourTotal = g; }
+  render();
+}
+function editCornmealOut(v){ state.cornmealPct = parseWeight(v)/state.flourTotal*100; render(); }
+function editPrefOut(v){
+  const g=parseWeight(v); const p=activePreferment(); if(!p) return;
+  const Hp=p.hyd/100, yp=p.yeast/100;
+  const PF_new=g/(1+Hp+yp);
+  p.pct=PF_new/state.flourTotal*100; render();
+}
+
+/* ============================= SIZE HELPER ============================= */
+function editPanDiameter(v){ state.panDiameter_cm=Math.max(1,parseLen(v)); render(); }
+function editPanLength(v){ state.panLength_cm=Math.max(1,parseLen(v)); render(); }
+function editPanWidth(v){ state.panWidth_cm=Math.max(1,parseLen(v)); render(); }
+function editPanTF(v){ state.panTF_gcm2=Math.max(0.001,parseTF(v)); render(); }
+document.getElementById('panDiameter').addEventListener('input', e=>editPanDiameter(e.target.value));
+document.getElementById('panLength').addEventListener('input', e=>editPanLength(e.target.value));
+document.getElementById('panWidth').addEventListener('input', e=>editPanWidth(e.target.value));
+document.getElementById('panTF_r').addEventListener('input', e=>editPanTF(e.target.value));
+document.getElementById('panTF_c').addEventListener('input', e=>editPanTF(e.target.value));
+document.getElementById('applySizeBtn').addEventListener('click', ()=>{
+  const st=currentStyle();
+  let areaCm2;
+  if(st.panShape==='round'){ const r=state.panDiameter_cm/2; areaCm2=Math.PI*r*r; }
+  else { areaCm2 = state.panLength_cm*state.panWidth_cm; }
+  const suggestedG = areaCm2*state.panTF_gcm2;
+  setWeightPerBallGrams(suggestedG);
+  toast('Set to '+fmtWeight(suggestedG)+weightUnitLabel()+' per '+st.massNoun.s);
+});
+
+/* ============================= WIRE STATIC INPUTS ============================= */
+document.getElementById('balls').addEventListener('input', e=>editBalls(e.target.value));
+document.getElementById('weightPerBall').addEventListener('input', e=>editWeightPerBall(e.target.value));
+document.getElementById('totalDough').addEventListener('input', e=>editTotalDough(e.target.value));
+document.getElementById('flourTotal').addEventListener('input', e=>editFlourTotal(e.target.value));
+
+function bindPair(rangeId,numId,fn){
+  document.getElementById(rangeId).addEventListener('input', e=>fn(e.target.value));
+  document.getElementById(numId).addEventListener('input', e=>fn(e.target.value));
+}
+bindPair('hydrationRange','hydration',editHydration);
+bindPair('saltRange','salt',editSalt);
+bindPair('oilRange','oil',editOil);
+bindPair('sugarRange','sugar',editSugar);
+bindPair('cornmealRange','cornmeal',editCornmeal);
+bindPair('freshRange','freshPct',editFresh);
+bindPair('dryRange','dryPct',editDry);
+bindPair('starterRange','starterPct',editStarterPct);
+bindPair('starterHydRange','starterHydration',editStarterHyd);
+bindPair('prefPctRange','prefPct',editPrefPct);
+bindPair('prefHydRange','prefHyd',editPrefHyd);
+bindPair('prefYeastRange','prefYeast',editPrefYeast);
+
+document.getElementById('ticketTotal').addEventListener('input', e=>editTotalDough(e.target.value));
+
+function bindTicketInputs(){
+  const map={ flourOut:editWheatFlourOut, waterOut:editWaterOut, saltOut:editSaltOut, oilOut:editOilOut, sugarOut:editSugarOut,
+    yeastOut:editYeastOut, flourAddedOut:editFlourAddedOut, starterOut:editStarterOut, cornmealOut:editCornmealOut,
+    waterAddedOut:editWaterAddedOut, prefOut:editPrefOut };
+  Object.keys(map).forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    // These fields sit inside #ticketBody, which is fully rebuilt (innerHTML) on every
+    // recalculation. Listening on 'input' meant every keystroke destroyed and recreated
+    // the very field being typed into. Committing on 'change' (fires on blur) instead
+    // lets the whole value be edited freely; Enter forces a blur to commit immediately.
+    el.addEventListener('change', e=>map[id](e.target.value));
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+  });
+}
+
+/* ============================= TAB / VISIBILITY LOGIC ============================= */
+function applyPrefRanges(type){
+  if(type==='none') return;
+  const info=PREF_INFO[type];
+  const elP=document.getElementById('prefPctRange'); elP.min=info.pctRange.min; elP.max=info.pctRange.max; elP.step=info.pctRange.step;
+  const elH=document.getElementById('prefHydRange'); elH.min=info.hydRange.min; elH.max=info.hydRange.max; elH.step=info.hydRange.step;
+  const elY=document.getElementById('prefYeastRange'); elY.min=info.yeastRange.min; elY.max=info.yeastRange.max; elY.step=info.yeastRange.step;
+}
+function updateVisibility(){
+  const st=currentStyle();
+  const t=state.leavenType;
+  document.getElementById('freshRow').style.display = t==='fresh' ? 'grid' : 'none';
+  document.getElementById('dryRow').style.display = t==='dry' ? 'grid' : 'none';
+  document.getElementById('starterRow1').style.display = t==='sourdough' ? 'grid' : 'none';
+  document.getElementById('starterRow2').style.display = t==='sourdough' ? 'grid' : 'none';
+  document.getElementById('tabSourdough').style.display = st.allowSourdough ? 'inline-block' : 'none';
+  document.getElementById('prefTypeRow').style.display = (t==='sourdough' || !st.allowPreferment) ? 'none' : 'block';
+  document.getElementById('prefBox').style.display = (t!=='sourdough' && st.allowPreferment && state.prefermentType!=='none') ? 'block' : 'none';
+  document.querySelectorAll('#leaventabs .tab').forEach(tb=>tb.classList.toggle('active', tb.dataset.type===t));
+  document.querySelectorAll('#prefTypeTabs .tab').forEach(tb=>tb.classList.toggle('active', tb.dataset.pref===state.prefermentType));
+  if(activePreferment()) applyPrefRanges(state.prefermentType);
+}
+document.getElementById('leaventabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  const st=currentStyle();
+  if(btn.dataset.type==='sourdough' && !st.allowSourdough) return;
+  state.leavenType=btn.dataset.type;
+  if(state.leavenType==='sourdough') state.prefermentType='none';
+  updateVisibility(); render();
+});
+document.getElementById('prefTypeTabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  const st=currentStyle();
+  if(!st.allowPreferment) return;
+  state.prefermentType=btn.dataset.pref;
+  applyPrefRanges(state.prefermentType);
+  updateVisibility(); render();
+});
+
+/* ============================= DOUGH TEMP TOOL ============================= */
+function usesPreferment(){ return state.leavenType==='sourdough' || !!activePreferment(); }
+function calcWaterTemp(){
+  const factors=[state.temp.room, state.temp.flour, state.temp.friction];
+  if(usesPreferment()) factors.push(state.temp.preferment);
+  const n=factors.length;
+  const sum=factors.reduce((a,c)=>a+c,0);
+  return (n+1)*state.temp.desired - sum;
+}
+function renderTemp(){
+  const tl=tempUnitLabel();
+  setVal('tDesired', fmtTemp(state.temp.desired));
+  setVal('tRoom', fmtTemp(state.temp.room));
+  setVal('tFlour', fmtTemp(state.temp.flour));
+  setVal('tFriction', fmtTemp(state.temp.friction));
+  setVal('tPreferment', fmtTemp(state.temp.preferment));
+  const showPref = usesPreferment();
+  document.getElementById('tPrefermentField').style.display = showPref ? 'block' : 'none';
+  document.getElementById('tempFormulaDesc').textContent = showPref
+    ? '4-factor formula (includes your starter/preferment temp) — set a target dough temp, it tells you the water.'
+    : '3-factor formula — set a target dough temp, tell it your kitchen, it tells you the water.';
+  const water=calcWaterTemp();
+  document.getElementById('tResult').textContent = fmtTemp(water)+tl;
+}
+function editTDesired(v){ state.temp.desired=parseTemp(v); render(); }
+function editTRoom(v){ state.temp.room=parseTemp(v); render(); }
+function editTFlour(v){ state.temp.flour=parseTemp(v); render(); }
+function editTFriction(v){ state.temp.friction=parseTemp(v); render(); }
+function editTPreferment(v){ state.temp.preferment=parseTemp(v); render(); }
+document.getElementById('tDesired').addEventListener('input', e=>editTDesired(e.target.value));
+document.getElementById('tRoom').addEventListener('input', e=>editTRoom(e.target.value));
+document.getElementById('tFlour').addEventListener('input', e=>editTFlour(e.target.value));
+document.getElementById('tFriction').addEventListener('input', e=>editTFriction(e.target.value));
+document.getElementById('tPreferment').addEventListener('input', e=>editTPreferment(e.target.value));
+document.getElementById('frictionHand').addEventListener('click', ()=>{ state.temp.friction=2; render(); });
+document.getElementById('frictionMachine').addEventListener('click', ()=>{ state.temp.friction=6; render(); });
+
+/* ============================= TOPPINGS ============================= */
+function renderToppings(wpb){
+  const st=currentStyle();
+  const scale = wpb/st.defaultWeight;
+  const wl=weightUnitLabel();
+  document.getElementById('topBalls').textContent = state.balls;
+  document.getElementById('topBody').innerHTML = st.toppings.map(t=>{
+    let per, perTotal, unitTxt;
+    if(t.unit==='leaves' || t.unit==='pinch'){
+      per = Math.max(1, Math.round(t.amt*scale));
+      unitTxt = t.unit==='leaves' ? ' leaves' : ' pinch';
+      return `<tr><td>${t.label}</td><td class="num">${per}${t.unit==='leaves'?'':''}</td><td class="num">${per*state.balls}</td></tr>`;
+    }
+    per = t.amt*scale;
+    return `<tr><td>${t.label}</td><td class="num">${fmtWeight(per)}${wl}</td><td class="num">${fmtWeight(per*state.balls)}${wl}</td></tr>`;
+  }).join('');
+}
+
+/* ============================= MAIN NAV / UNITS ============================= */
+document.getElementById('mainnav').addEventListener('click', e=>{
+  const btn=e.target.closest('.navtab'); if(!btn) return;
+  jumpToView(btn.dataset.view);
+});
+document.getElementById('unitToggle').addEventListener('click', e=>{
+  const btn=e.target.closest('.unit-btn'); if(!btn) return;
+  state.unitSystem=btn.dataset.unit;
+  document.querySelectorAll('.unit-btn').forEach(b=>b.classList.toggle('active', b===btn));
+  render();
+});
+document.getElementById('wikiTopTabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('#wikiTopTabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.wtop-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('wtop-'+btn.dataset.wtop).classList.add('active');
+});
+document.getElementById('wikitabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('#wikitabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#wtop-general .wiki-panel').forEach(pnl=>pnl.classList.remove('active'));
+  document.getElementById('wiki-'+btn.dataset.wiki).classList.add('active');
+});
+document.getElementById('notetabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('#notetabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#view-notebook .wiki-panel').forEach(pnl=>pnl.classList.remove('active'));
+  document.getElementById('note-'+btn.dataset.note).classList.add('active');
+});
+
+/* ============================= BUILD STYLE GUIDE WIKI PAGES ============================= */
+function buildStyleWikiPages(){
+  const tabsEl=document.getElementById('styleWikiTabs');
+  const bodyEl=document.getElementById('styleWikiBody');
+  tabsEl.innerHTML = STYLE_ORDER.map((id,i)=>`<button class="tab${i===0?' active':''}" data-styleguide="${id}">${STYLES[id].name}</button>`).join('');
+  bodyEl.innerHTML = STYLE_ORDER.map((id,i)=>{
+    const st=STYLES[id]; const g=st.guide; const w=st.watch;
+    const watchLine = w ? `<div class="src-line">🎥 Watch: ${w.creator?`<b>${w.creator}</b> — `:''}<a href="${w.url}" target="_blank" rel="noopener">${w.creator?'video':'link'}</a>. ${w.note}.</div>` : '';
+    return `<div class="wiki-panel${i===0?' active':''}" id="styleguide-${id}">
+      <div class="card">
+        <h3>${st.name}</h3>
+        <div class="region">${st.region}</div>
+        <p><i>${st.tagline}</i></p>
+        <h4>History & character</h4><p>${g.history}</p>
+        <h4>The dough</h4><p>${g.dough}</p>
+        <h4>Shaping</h4><p>${g.shaping}</p>
+        <h4>Assembly & toppings</h4><p>${g.assembly}</p>
+        <h4>Baking</h4><p>${g.baking}</p>
+        <div class="callout">${g.tip}</div>
+        <div style="margin-top:14px;"><button class="btn ghost small" onclick="loadStyleFromWiki('${id}')">Open in Calculator →</button></div>
+        ${watchLine}
+        <div class="src-line">Sources for this style: ${st.sources}. <a onclick="jumpToWiki('sources')">Full list →</a></div>
+      </div>
+    </div>`;
+  }).join('');
+  tabsEl.addEventListener('click', e=>{
+    const btn=e.target.closest('.tab'); if(!btn) return;
+    tabsEl.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    bodyEl.querySelectorAll('.wiki-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('styleguide-'+btn.dataset.styleguide).classList.add('active');
+  });
+}
+function loadStyleFromWiki(id){
+  switchStyle(id);
+  jumpToView('calculator');
+}
+
+/* ============================= STORAGE ============================= */
+/* Works in two environments:
+   1) Inside a Claude.ai artifact — window.storage exists, saves follow the person's Claude account.
+   2) Self-hosted (GitHub Pages, etc.) — window.storage doesn't exist, so this falls back to the
+      browser's own localStorage. Saves then live only on that one device/browser, not shared
+      across visitors or devices — there is no server here, so there's nowhere else for them to live. */
+const HAS_CLAUDE_STORAGE = (typeof window!=='undefined' && !!window.storage);
+const LS_PREFIX = 'pizzaAtlas:';
+async function storeSet(key,value){
+  try{
+    if(HAS_CLAUDE_STORAGE){ await window.storage.set(key, JSON.stringify(value), false); }
+    else{ localStorage.setItem(LS_PREFIX+key, JSON.stringify(value)); }
+    return true;
+  }catch(e){ console.error(e); toast('Save failed'); return false; }
+}
+async function storeGet(key){
+  try{
+    if(HAS_CLAUDE_STORAGE){ const r=await window.storage.get(key,false); return r? JSON.parse(r.value):null; }
+    const v=localStorage.getItem(LS_PREFIX+key); return v? JSON.parse(v):null;
+  }catch(e){ return null; }
+}
+async function storeDelete(key){
+  try{
+    if(HAS_CLAUDE_STORAGE){ await window.storage.delete(key,false); }
+    else{ localStorage.removeItem(LS_PREFIX+key); }
+    return true;
+  }catch(e){ return false; }
+}
+async function storeList(prefix){
+  try{
+    if(HAS_CLAUDE_STORAGE){ const r=await window.storage.list(prefix,false); return r? r.keys:[]; }
+    const out=[]; const full=LS_PREFIX+prefix;
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && k.indexOf(full)===0) out.push(k.slice(LS_PREFIX.length));
+    }
+    return out;
+  }catch(e){ return []; }
+}
+
+document.getElementById('saveRecipeBtn').addEventListener('click', async ()=>{
+  const st=currentStyle();
+  const nameInput=document.getElementById('recipeName');
+  const name=nameInput.value.trim()||nameInput.placeholder;
+  const id=uid(); const total=computeTotal();
+  const record={
+    id, name, createdAt:Date.now(), styleId:state.styleId, styleName:st.name,
+    leavenType:state.leavenType, balls:state.balls, flourTotal:state.flourTotal,
+    hydration:state.hydration, salt:state.salt, oil:state.oil, sugar:state.sugar, cornmealPct:state.cornmealPct,
+    freshPct:state.freshPct, dryPct:state.dryPct, dryRatio:state.dryRatio,
+    starterPct:state.starterPct, starterHydration:state.starterHydration,
+    prefermentType:state.prefermentType,
+    preferment: state.prefermentType!=='none' ? {...state.preferment[state.prefermentType]} : null,
+    totalDough:total, weightPerBall: total/state.balls,
+  };
+  const ok=await storeSet('dough:'+id, record);
+  if(ok){ toast('Recipe saved'); nameInput.value=''; }
+});
+function doughSummary(r){
+  const parts=[
+    r.styleName||'',
+    r.leavenType==='sourdough'?'Sourdough':(r.leavenType==='fresh'?'Fresh yeast':'Dry yeast'),
+    r.prefermentType && r.prefermentType!=='none' ? '+ '+r.prefermentType : '',
+    `${r.hydration}% hyd.`, `${r.balls}×${fmtWeight(r.weightPerBall)}${weightUnitLabel()}`
+  ].filter(Boolean);
+  return parts.join(' · ');
+}
+function doughShareText(r){
+  return `${r.name}\n${doughSummary(r)}\nTotal dough: ${fmtWeight(r.totalDough)}${weightUnitLabel()}\nTotal flour: ${fmtWeight(r.flourTotal)}${weightUnitLabel()}\n\nSaved from The Pizza Atlas`;
+}
+async function refreshDoughs(){
+  const keys=await storeList('dough:');
+  const list=document.getElementById('doughsList');
+  if(!keys.length){ list.innerHTML=`<div class="empty-state">No saved doughs yet — save one from the Calculator.</div>`; return; }
+  const records=(await Promise.all(keys.map(k=>storeGet(k)))).filter(Boolean).sort((a,b)=>b.createdAt-a.createdAt);
+  list.innerHTML=records.map(r=>`
+    <div class="nb-item" data-id="${r.id}">
+      <div class="nb-title">${escapeHtml(r.name)}</div>
+      <div class="nb-meta">${doughSummary(r)}</div>
+      <div class="nb-actions">
+        <button class="btn ghost" data-act="load">Load into Calculator</button>
+        <button class="btn ghost" data-act="share">Share</button>
+        <button class="btn danger" data-act="delete">Delete</button>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('.nb-item').forEach(item=>{
+    const id=item.dataset.id; const rec=records.find(r=>r.id===id);
+    item.querySelector('[data-act=load]').addEventListener('click', ()=>{
+      const sid = rec.styleId && STYLES[rec.styleId] ? rec.styleId : 'neapolitan';
+      state.styleId = sid;
+      Object.assign(state, {
+        leavenType:rec.leavenType, balls:rec.balls, flourTotal:rec.flourTotal, hydration:rec.hydration,
+        salt:rec.salt, oil:rec.oil, sugar:rec.sugar||0, cornmealPct:rec.cornmealPct||0,
+        freshPct:rec.freshPct, dryPct:rec.dryPct, dryRatio:rec.dryRatio,
+        starterPct:rec.starterPct, starterHydration:rec.starterHydration,
+        prefermentType: rec.prefermentType||'none',
+      });
+      if(rec.prefermentType && rec.prefermentType!=='none' && rec.preferment){
+        state.preferment[rec.prefermentType] = {...rec.preferment};
+        applyPrefRanges(rec.prefermentType);
+      }
+      renderStylePicker();
+      updateVisibility(); render();
+      jumpToView('calculator');
+      toast('Loaded "'+rec.name+'"');
+    });
+    item.querySelector('[data-act=share]').addEventListener('click', ()=>copyText(doughShareText(rec)));
+    item.querySelector('[data-act=delete]').addEventListener('click', function(){
+      if(this.dataset.confirm==='1'){ storeDelete('dough:'+id).then(refreshDoughs); toast('Deleted'); }
+      else{ this.dataset.confirm='1'; this.textContent='Sure?'; setTimeout(()=>{ this.dataset.confirm='0'; this.textContent='Delete'; },3000); }
+    });
+  });
+}
+
+function makeTextNotebook(prefix, listId, titleId, bodyId, saveBtnId, clearBtnId){
+  let editingId=null;
+  async function refresh(){
+    const keys=await storeList(prefix+':');
+    const list=document.getElementById(listId);
+    if(!keys.length){ list.innerHTML=`<div class="empty-state">Nothing saved here yet.</div>`; return; }
+    const records=(await Promise.all(keys.map(k=>storeGet(k)))).filter(Boolean).sort((a,b)=>b.createdAt-a.createdAt);
+    list.innerHTML=records.map(r=>`
+      <div class="nb-item" data-id="${r.id}">
+        <div class="nb-title">${escapeHtml(r.title)}</div>
+        <div class="nb-meta">${new Date(r.createdAt).toLocaleDateString()}</div>
+        <div class="nb-body">${escapeHtml(r.body)}</div>
+        <div class="nb-actions">
+          <button class="btn ghost" data-act="edit">Edit</button>
+          <button class="btn ghost" data-act="share">Share</button>
+          <button class="btn danger" data-act="delete">Delete</button>
+        </div>
+      </div>`).join('');
+    list.querySelectorAll('.nb-item').forEach(item=>{
+      const id=item.dataset.id; const rec=records.find(r=>r.id===id);
+      item.querySelector('[data-act=edit]').addEventListener('click', ()=>{
+        document.getElementById(titleId).value=rec.title;
+        document.getElementById(bodyId).value=rec.body;
+        editingId=rec.id; toast('Editing — Save to update');
+      });
+      item.querySelector('[data-act=share]').addEventListener('click', ()=>copyText(`${rec.title}\n\n${rec.body}\n\nSaved from The Pizza Atlas`));
+      item.querySelector('[data-act=delete]').addEventListener('click', function(){
+        if(this.dataset.confirm==='1'){ storeDelete(prefix+':'+id).then(refresh); toast('Deleted'); }
+        else{ this.dataset.confirm='1'; this.textContent='Sure?'; setTimeout(()=>{ this.dataset.confirm='0'; this.textContent='Delete'; },3000); }
+      });
+    });
+  }
+  document.getElementById(saveBtnId).addEventListener('click', async ()=>{
+    const title=document.getElementById(titleId).value.trim();
+    const body=document.getElementById(bodyId).value.trim();
+    if(!title && !body) return;
+    const id=editingId||uid();
+    const record={ id, title:title||'Untitled', body, createdAt:Date.now() };
+    const ok=await storeSet(prefix+':'+id, record);
+    if(ok){ toast(editingId?'Updated':'Saved'); document.getElementById(titleId).value=''; document.getElementById(bodyId).value=''; editingId=null; refresh(); }
+  });
+  document.getElementById(clearBtnId).addEventListener('click', ()=>{ document.getElementById(titleId).value=''; document.getElementById(bodyId).value=''; editingId=null; });
+  return refresh;
+}
+const refreshSauces=makeTextNotebook('sauce','saucesList','sauceTitle','sauceBody','sauceSaveBtn','sauceClearBtn');
+const refreshNotes=makeTextNotebook('note','notesList','noteTitle','noteBody','noteSaveBtn','noteClearBtn');
+function refreshNotebook(){ refreshDoughs(); refreshSauces(); refreshNotes(); }
+function renderStorageModeNote(){
+  const el=document.getElementById('storageModeNote'); if(!el) return;
+  el.innerHTML = HAS_CLAUDE_STORAGE
+    ? 'Saved privately to your Claude account, and there whenever you reopen this app. There\'s no cross-account sharing — use <b>Share</b> on any entry to copy it as text you can paste into a message.'
+    : 'Saved to <b>this browser only</b> (no Claude account detected — likely self-hosted). It\'ll be here next time you open this page in this same browser, but won\'t follow you to another device or show up for other visitors. Use <b>Share</b> to copy an entry as text for anyone else.';
+}
+
+/* ============================= INIT ============================= */
+buildStyleWikiPages();
+switchStyle('neapolitan', true);
+renderStorageModeNote();
+</script>
+</body>
+</html>
