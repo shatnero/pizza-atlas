@@ -176,6 +176,12 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   footer{margin-top:24px;font-size:11.5px;color:var(--muted);line-height:1.6;}
+
+  .chat-msg{max-width:85%;padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;}
+  .chat-msg.user{align-self:flex-end;background:var(--ink);color:var(--surface);border-bottom-right-radius:3px;}
+  .chat-msg.assistant{align-self:flex-start;background:var(--basil-soft);color:var(--ink);border-bottom-left-radius:3px;}
+  .chat-msg.error{align-self:flex-start;background:var(--tomato-soft);color:var(--ink);border-bottom-left-radius:3px;}
+  .chat-msg.thinking{align-self:flex-start;background:var(--basil-soft);color:var(--muted);font-style:italic;}
 </style>
 </head>
 <body>
@@ -192,8 +198,10 @@
 
   <nav class="mainnav" id="mainnav">
     <button class="navtab active" data-view="calculator">Calculator</button>
+    <button class="navtab" data-view="builder">Builder</button>
     <button class="navtab" data-view="wiki">Wiki</button>
     <button class="navtab" data-view="notebook">Notebook</button>
+    <button class="navtab" data-view="ai">Ask AI</button>
     <div class="unit-toggle" id="unitToggle">
       <button class="unit-btn active" data-unit="metric">Metric · °C</button>
       <button class="unit-btn" data-unit="us">US · °F</button>
@@ -371,6 +379,54 @@
     </footer>
   </div>
 
+  <!-- ================= BUILDER VIEW ================= -->
+  <div class="view" id="view-builder">
+    <div class="banner" style="margin-top:0;">
+      <span class="ico">🍕</span>
+      <div>Sized for your current <b><span id="builderStyleName">Neapolitan</span></b> batch — <span id="builderSizeText">4 × 260g</span>. Change size any time on the <a onclick="jumpToView('calculator')">Calculator</a> tab.</div>
+    </div>
+
+    <div class="tabs" id="buildCatTabs" style="margin-top:18px;">
+      <button class="tab active" data-cat="rosso">🍅 Tomato (Rosso)</button>
+      <button class="tab" data-cat="bianco">⚪ White (Bianco)</button>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>Classic Builds</h2>
+        <div class="desc">Tap one to see it scaled to your dough</div>
+        <div class="style-grid" id="buildGrid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));"></div>
+      </div>
+
+      <div class="ticket-outer">
+        <div class="ticket" id="buildDetailCard" style="display:none;">
+          <h2 id="buildDetailName">—</h2>
+          <div class="desc" id="buildDetailDesc"></div>
+          <div id="buildDetailChef" class="note" style="display:none;"></div>
+          <div id="buildIngredients"></div>
+          <div class="row" style="margin-top:4px;">
+            <div class="row-label"><span>Pizzas getting this build</span><span class="hint" id="buildAllocHint"></span></div>
+            <div class="row-inputs"><input type="number" id="buildCount" min="1" step="1" style="width:70px;"></div>
+          </div>
+          <div class="savebar">
+            <button class="btn" id="addToListBtn" style="flex:1;">Add to Shopping List</button>
+          </div>
+        </div>
+        <div class="tear" id="buildDetailTear" style="display:none;"></div>
+
+        <div class="panel" style="margin-top:16px;">
+          <h2>🛒 Shopping List</h2>
+          <div class="desc" id="cartSummary">No builds added yet</div>
+          <div id="cartList" class="nb-list"></div>
+          <div class="savebar" style="margin-top:14px;">
+            <button class="btn" id="copyListBtn">Copy Full List (dough + toppings)</button>
+          </div>
+          <div class="note">The copied list includes your dough ingredients from the Calculator plus every topping build added here — ready to paste into Apple Notes, Reminders, or a text.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= WIKI VIEW ================= -->
   <div class="view" id="view-wiki">
     <div class="tabs" id="wikiTopTabs">
@@ -534,6 +590,13 @@
         <h4>Technical concepts</h4>
         <div class="source-item"><div class="src-title">Thickness Factor (TF)</div><div class="src-meta">Tom Lehmann ("The Dough Doctor"), PMQ Pizza Magazine · pizzamaking.com community</div><div class="src-desc">The industry concept behind this Atlas's "suggest weight from size" tool: dough weight ÷ pan area. Lehmann was a longtime American Institute of Baking consultant; pizzamaking.com is the oldest and largest home-pizza-maker technical community, in continuous operation since the early 2000s.</div></div>
 
+        <h4>Local AI apps (for the "Ask AI" tab)</h4>
+        <p>The Ask AI tab talks to a language model running on your own device or network — it works with any server that exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint. <b>Right now, this app is set up and tested for one path specifically: Mac + LM Studio</b>, reached over your local Wi-Fi from any device — including an iPhone. Setup steps are in the Ask AI tab's own footer.</p>
+        <div class="source-item"><div class="src-title">LM Studio</div><div class="src-meta">Mac, Windows, Linux — lmstudio.ai</div><div class="src-desc">The supported option. Developer tab → Server Settings → turn on "Serve on Local Network" and "Enable CORS," then use your Mac's local IP address as the Base URL from any other device on the same Wi-Fi, or "localhost" if you're on the same Mac.</div></div>
+        <div class="callout warn"><b>About "Locally" (LM Studio's iPhone app) — read this before trying it:</b> as of writing, Locally connects only to LM Studio itself, over a closed, account-authenticated link called LM Link. LM Studio's own documentation is explicit that this link is "designed to connect LM Studio on your computer to Locally on your mobile device, not between two Locally apps" — it isn't a URL that this app, or any other third-party app, can reach. That means Locally <b>cannot currently be used</b> to connect Ask AI to your Mac's models; use the direct Wi-Fi method above instead. iPhone-only inference (no Mac at all) isn't supported here yet, specifically pending LM Studio exposing a reachable endpoint through Locally — if that changes, this page will be updated.</div>
+        <div class="source-item"><div class="src-title">Ollama</div><div class="src-meta">Mac, Windows, Linux — ollama.com</div><div class="src-desc">Same OpenAI-compatible API shape as LM Studio — the Mac+Wi-Fi setup pattern above works the same way if you use this instead, though the exact settings menu differs.</div></div>
+        <div class="callout warn"><b>Security note:</b> "Serve on Local Network" opens that server up beyond just your one computer to your Wi-Fi network. Only do this on networks you trust, and check whether your chosen app supports authentication if you plan to leave it running.</div>
+
         <h4>Ingredient provenance & history</h4>
         <div class="source-item"><div class="src-title">Consorzio di Tutela del Pomodoro San Marzano dell'Agro Sarnese-Nocerino</div><div class="src-meta">San Marzano DOP governing body</div><div class="src-desc">The official body certifying genuine San Marzano DOP tomatoes.</div></div>
         <div class="source-item"><div class="src-title">Flour mill technical data sheets</div><div class="src-meta">Molino Pasini, Molino Spadoni, and similar mills</div><div class="src-desc">Mills publish their own W, protein, and P/L values per product — more precise than any general table.</div></div>
@@ -583,6 +646,46 @@
       </div>
       <div id="notesList" class="nb-list"></div>
     </div>
+  </div>
+
+  <!-- ================= ASK AI VIEW ================= -->
+  <div class="view" id="view-ai">
+    <div class="callout">
+      This connects to <b>a language model running on your own Mac</b> — nothing is sent to any cloud service, and no data ever passes through Anthropic or Claude. Currently set up and tested for one path: <b>LM Studio on a Mac</b>, reached over your Wi-Fi from any device (including an iPhone). See the <b>Sources & Reading</b> page for exact setup steps and why the "Locally" iPhone app isn't a shortcut here (yet).
+    </div>
+
+    <div class="panel">
+      <h2>🔌 Connection</h2>
+      <div class="desc">Point this at any OpenAI-compatible local server</div>
+      <div class="row">
+        <div class="row-label"><span>Base URL</span><span class="hint">e.g. LM Studio on this device</span></div>
+        <div class="row-inputs"><input type="text" id="aiBaseUrl" placeholder="http://localhost:1234/v1" style="width:100%;text-align:left;"></div>
+      </div>
+      <div class="row">
+        <div class="row-label"><span>Model name</span><span class="hint">optional — many servers ignore this and use whatever's loaded</span></div>
+        <div class="row-inputs"><input type="text" id="aiModel" placeholder="local-model" style="width:100%;text-align:left;"></div>
+      </div>
+      <div class="savebar">
+        <button class="btn" id="aiTestBtn">Test Connection</button>
+        <button class="btn ghost" id="aiSaveBtn">Save Settings</button>
+      </div>
+      <div class="note" id="aiStatus">Not connected yet.</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <h2>💬 Ask about the Wiki, or for suggestions</h2>
+      <div class="desc">Answers come from your local model, grounded with this app's own Wiki and Style Guide text as context.</div>
+      <div id="aiChatLog" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;max-height:420px;overflow-y:auto;"></div>
+      <div class="savebar">
+        <input type="text" id="aiInput" placeholder="e.g. What's a good topping for Roman al Taglio?">
+        <button class="btn" id="aiSendBtn">Send</button>
+      </div>
+    </div>
+
+    <footer>
+      <b>Setting this up — Mac + LM Studio (the currently supported path):</b> on your Mac, open LM Studio → <b>Developer</b> tab → <b>Server Settings</b>. Turn on <b>"Serve on Local Network"</b> and <b>"Enable CORS,"</b> then start the server. Find your Mac's local IP address (System Settings → Wi-Fi → Details) — it'll look like <code>192.168.1.23</code>. On your iPhone (or any device on the same Wi-Fi), enter <code>http://192.168.1.23:1234/v1</code> as the Base URL above, using your Mac's actual address and the port LM Studio shows. Both devices need to be on the <b>same Wi-Fi network</b> — this is local-network only, not remote-over-internet. "Serve on Local Network" does open that server to your Wi-Fi, so only enable it on networks you trust. Using this page on the <b>same Mac</b> that's running LM Studio, <code>http://localhost:1234/v1</code> works without any of the above. Some browsers block this kind of cross-origin request by default (a security feature called Private Network Access) — if Test Connection fails, try a different browser before assuming something's misconfigured.
+      <div class="callout" style="margin-top:10px;">📱 <b>iPhone-only, no Mac:</b> not supported yet. LM Studio's <b>Locally</b> app currently only connects to LM Studio itself over a closed, account-authenticated link (LM Link) — it doesn't expose an address this page, or any other third-party app, can reach. If that changes, this tab will be updated to connect directly. See Wiki → Sources for the full explanation.</div>
+    </footer>
   </div>
 </div>
 
@@ -828,6 +931,57 @@ const STYLES = {
 };
 const STYLE_ORDER = ['neapolitan','newyork','romantonda','romanteglia','detroit','sicilian','chicago'];
 
+/* ============================= PIZZA BUILDS (Builder mode) ============================= */
+// Amounts are per one "baseline" pizza (each style's own defaultWeight ball/pan) and scale
+// with whatever size you've actually got dialed in on the Calculator.
+const BUILDS = [
+  // --- ROSSO (tomato-based) ---
+  { id:'margherita', name:'Margherita', category:'rosso',
+    desc:'The original — tomato, mozzarella, basil, the colours of the Italian flag.',
+    ingredients:[{label:'San Marzano tomato',amt:70,unit:'g'},{label:'Fior di latte mozzarella',amt:90,unit:'g'},{label:'Fresh basil',amt:4,unit:'leaves'},{label:'Olive oil',amt:3,unit:'ml'}] },
+  { id:'marinara', name:'Marinara', category:'rosso',
+    desc:'The oldest pizza on record — no cheese at all.',
+    ingredients:[{label:'Tomato',amt:80,unit:'g'},{label:'Garlic, thinly sliced',amt:2,unit:'cloves'},{label:'Dried oregano',amt:1,unit:'pinch'},{label:'Olive oil',amt:5,unit:'ml'}] },
+  { id:'diavola', name:'Diavola', category:'rosso',
+    desc:'Spicy salami, for when you want the pizza to fight back a little.',
+    ingredients:[{label:'Tomato',amt:70,unit:'g'},{label:'Mozzarella',amt:80,unit:'g'},{label:'Spicy salame or \'nduja',amt:50,unit:'g'},{label:'Chili oil, to finish (optional)',amt:3,unit:'ml'}] },
+  { id:'capricciosa', name:'Capricciosa', category:'rosso',
+    desc:'The "whimsical" one — a bit of everything, unmixed.',
+    ingredients:[{label:'Tomato',amt:70,unit:'g'},{label:'Mozzarella',amt:80,unit:'g'},{label:'Cooked ham',amt:40,unit:'g'},{label:'Mushrooms, sliced',amt:40,unit:'g'},{label:'Artichoke hearts',amt:30,unit:'g'},{label:'Black olives',amt:20,unit:'g'}] },
+  { id:'quattrostagioni', name:'Quattro Stagioni', category:'rosso',
+    desc:"Capricciosa's ingredients, arranged in four separate quarters — one per season.",
+    ingredients:[{label:'Tomato',amt:70,unit:'g'},{label:'Mozzarella',amt:80,unit:'g'},{label:'Cooked ham (one quarter)',amt:35,unit:'g'},{label:'Mushrooms, sliced (one quarter)',amt:35,unit:'g'},{label:'Artichoke hearts (one quarter)',amt:30,unit:'g'},{label:'Black olives (one quarter)',amt:20,unit:'g'}] },
+  { id:'prosciuttofunghi', name:'Prosciutto e Funghi', category:'rosso',
+    desc:'Ham and mushroom — the reliable, everyone-likes-it classic.',
+    ingredients:[{label:'Tomato',amt:70,unit:'g'},{label:'Mozzarella',amt:90,unit:'g'},{label:'Cooked ham',amt:50,unit:'g'},{label:'Mushrooms, sliced',amt:50,unit:'g'}] },
+  { id:'napoli', name:'Napoli', category:'rosso',
+    desc:'Anchovies, capers, oregano — briny and assertive.',
+    ingredients:[{label:'Tomato',amt:70,unit:'g'},{label:'Mozzarella',amt:70,unit:'g'},{label:'Anchovy fillets',amt:20,unit:'g'},{label:'Capers',amt:10,unit:'g'},{label:'Dried oregano',amt:1,unit:'pinch'}] },
+  { id:'beesting', name:'"Bee Sting" style', category:'rosso',
+    desc:'Spicy soppressata and honey — a modern combination popularised by Roberta\'s in Brooklyn and now widely copied.',
+    ingredients:[{label:'Tomato',amt:70,unit:'g'},{label:'Mozzarella',amt:90,unit:'g'},{label:'Spicy soppressata',amt:50,unit:'g'},{label:'Honey, drizzled after baking',amt:15,unit:'g'},{label:'Chili flakes',amt:1,unit:'pinch'}] },
+
+  // --- BIANCO (no tomato) ---
+  { id:'quattroformaggi', name:'Quattro Formaggi', category:'bianco',
+    desc:'Four cheeses, no tomato — pick contrasting textures, not just four kinds of mild.',
+    ingredients:[{label:'Mozzarella',amt:70,unit:'g'},{label:'Gorgonzola',amt:30,unit:'g'},{label:'Fontina',amt:30,unit:'g'},{label:'Parmesan, grated',amt:20,unit:'g'}] },
+  { id:'salsicciafriarielli', name:'Salsiccia e Friarielli', category:'bianco',
+    desc:'A Neapolitan white classic — sausage and bitter broccoli rabe.',
+    ingredients:[{label:'Mozzarella',amt:80,unit:'g'},{label:'Italian sausage, crumbled',amt:80,unit:'g'},{label:'Friarielli (broccoli rabe), sautéed',amt:60,unit:'g'},{label:'Garlic, sliced',amt:1,unit:'clove'}] },
+  { id:'patate', name:'Patate e Rosmarino', category:'bianco',
+    desc:'Thin potato and rosemary — deceptively simple, genuinely excellent.',
+    ingredients:[{label:'Potato, very thinly sliced',amt:100,unit:'g'},{label:'Mozzarella',amt:60,unit:'g'},{label:'Fresh rosemary',amt:1,unit:'sprig'},{label:'Olive oil',amt:8,unit:'ml'}] },
+  { id:'romanabianca', name:'Pizza Bianca (Roman)', category:'bianco',
+    desc:'As minimal as pizza gets — this one is really about the crust.',
+    ingredients:[{label:'Olive oil',amt:10,unit:'ml'},{label:'Coarse salt',amt:1,unit:'pinch'},{label:'Fresh rosemary (optional)',amt:1,unit:'sprig'}] },
+  { id:'tartufo', name:'Tartufo (Truffle)', category:'bianco',
+    desc:'Mushroom and truffle — a rich, indulgent finish.',
+    ingredients:[{label:'Mozzarella',amt:70,unit:'g'},{label:'Fontina',amt:30,unit:'g'},{label:'Mushrooms, sautéed',amt:50,unit:'g'},{label:'Truffle oil or paste, added after baking',amt:5,unit:'g'}] },
+  { id:'rosa', name:'"Rosa"', category:'bianco', chef:"Inspired by Chris Bianco's Pizza Rosa, Pizzeria Bianco (Phoenix)",
+    desc:'Parmigiano-Reggiano, red onion, rosemary and pistachio — one of the most celebrated modern American pizzas, and there\'s no tomato anywhere near it.',
+    ingredients:[{label:'Parmigiano-Reggiano, grated',amt:70,unit:'g'},{label:'Red onion, very thinly sliced',amt:40,unit:'g'},{label:'Fresh rosemary',amt:1,unit:'tsp'},{label:'Pistachios, chopped',amt:20,unit:'g'},{label:'Olive oil',amt:8,unit:'ml'}] },
+];
+
 /* ============================= STATE ============================= */
 const state = {
   unitSystem: 'metric',
@@ -933,6 +1087,7 @@ function jumpToView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
   if(view==='notebook') refreshNotebook();
+  if(view==='builder') renderBuilder();
 }
 function jumpToWiki(tab){
   jumpToView('wiki');
@@ -1339,6 +1494,149 @@ function renderToppings(wpb){
   }).join('');
 }
 
+/* ============================= BUILDER (pizza designer + shopping list) ============================= */
+const builderState = { category:'rosso', selectedBuildId:null, cart:[] }; // cart: [{buildId, count}]
+
+function builderScale(){ const st=currentStyle(); const total=computeTotal(); const wpb=total/state.balls; return wpb/st.defaultWeight; }
+function fmtBuildAmt(amt, unit, scale){
+  if(unit==='leaves' || unit==='pinch' || unit==='sprig' || unit==='cloves' || unit==='clove' || unit==='tsp'){
+    const n = Math.max(1, Math.round(amt*scale));
+    return `${n} ${unit}${(unit==='clove'&&n>1)?'s':''}`;
+  }
+  const wl = weightUnitLabel();
+  return fmtWeight(amt*scale)+wl;
+}
+function allocatedCount(excludeIdx){
+  return builderState.cart.reduce((sum,c,i)=> (i===excludeIdx?sum:sum+c.count), 0);
+}
+function renderBuilderBanner(){
+  const st=currentStyle();
+  document.getElementById('builderStyleName').textContent = st.name;
+  document.getElementById('builderSizeText').textContent = `${state.balls} × ${fmtWeight(computeTotal()/state.balls)}${weightUnitLabel()}`;
+}
+function renderBuildGrid(){
+  const grid=document.getElementById('buildGrid');
+  const list=BUILDS.filter(b=>b.category===builderState.category);
+  grid.innerHTML = list.map(b=>`
+    <button class="style-card${b.id===builderState.selectedBuildId?' active':''}" data-build="${b.id}">
+      <div class="sc-name">${b.name}</div>
+      <div class="sc-tag">${b.desc}</div>
+    </button>`).join('');
+}
+function renderBuildDetail(){
+  const b = BUILDS.find(x=>x.id===builderState.selectedBuildId);
+  const card=document.getElementById('buildDetailCard'), tear=document.getElementById('buildDetailTear');
+  if(!b){ card.style.display='none'; tear.style.display='none'; return; }
+  card.style.display='block'; tear.style.display='block';
+  const scale = builderScale();
+  document.getElementById('buildDetailName').textContent = b.name;
+  document.getElementById('buildDetailDesc').textContent = b.desc;
+  const chefEl = document.getElementById('buildDetailChef');
+  if(b.chef){ chefEl.style.display='block'; chefEl.textContent = b.chef; } else { chefEl.style.display='none'; }
+  document.getElementById('buildIngredients').innerHTML = b.ingredients.map(ing=>
+    `<div class="tline"><span class="tlabel">${ing.label}</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:700;">${fmtBuildAmt(ing.amt, ing.unit, scale)}</span></div>`
+  ).join('');
+  const remaining = Math.max(1, state.balls - allocatedCount());
+  const countEl = document.getElementById('buildCount');
+  if(document.activeElement!==countEl) countEl.value = remaining;
+  document.getElementById('buildAllocHint').textContent = `of ${state.balls} total — ${allocatedCount()} already assigned`;
+}
+function renderCart(){
+  const list=document.getElementById('cartList');
+  const summary=document.getElementById('cartSummary');
+  if(!builderState.cart.length){ list.innerHTML=''; summary.textContent='No builds added yet'; return; }
+  const totalAssigned = allocatedCount();
+  summary.textContent = `${totalAssigned} of ${state.balls} pizzas assigned`;
+  list.innerHTML = builderState.cart.map((c,i)=>{
+    const b=BUILDS.find(x=>x.id===c.buildId);
+    return `<div class="nb-item" data-idx="${i}">
+      <div class="nb-title">${b.name} <span style="color:var(--muted);font-weight:400;">× ${c.count}</span></div>
+      <div class="nb-actions"><button class="btn danger" data-act="remove">Remove</button></div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.nb-item').forEach(item=>{
+    const idx=parseInt(item.dataset.idx);
+    item.querySelector('[data-act=remove]').addEventListener('click', ()=>{
+      builderState.cart.splice(idx,1); renderCart(); renderBuildDetail();
+    });
+  });
+}
+document.getElementById('buildCatTabs').addEventListener('click', e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('#buildCatTabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  builderState.category=btn.dataset.cat;
+  builderState.selectedBuildId=null;
+  renderBuildGrid(); renderBuildDetail();
+});
+document.getElementById('buildGrid').addEventListener('click', e=>{
+  const btn=e.target.closest('.style-card'); if(!btn) return;
+  builderState.selectedBuildId=btn.dataset.build;
+  renderBuildGrid(); renderBuildDetail();
+});
+document.getElementById('addToListBtn').addEventListener('click', ()=>{
+  const b=BUILDS.find(x=>x.id===builderState.selectedBuildId); if(!b) return;
+  const count=Math.max(1, parseInt(document.getElementById('buildCount').value)||1);
+  builderState.cart.push({buildId:b.id, count});
+  toast('Added '+b.name+' × '+count);
+  renderCart(); renderBuildDetail();
+});
+function buildShoppingListText(){
+  const st=currentStyle();
+  const b=breakdown();
+  const wl=weightUnitLabel();
+  const total=computeTotal();
+  let lines = [`🍕 Pizza Night Shopping List`, `${st.name} — ${state.balls} × ${fmtWeight(total/state.balls)}${wl}`, ''];
+  lines.push('DOUGH');
+  if(state.leavenType==='sourdough'){
+    lines.push(`• Flour: ${fmtWeight(b.F_added)}${wl} (+ ${fmtWeight(b.FS)}${wl} in starter)`);
+    lines.push(`• Starter: ${fmtWeight(b.S)}${wl}`);
+    lines.push(`• Water: ${fmtWeight(b.water_added)}${wl} (+ ${fmtWeight(b.WS)}${wl} in starter)`);
+  } else if(activePreferment()){
+    const info=PREF_INFO[state.prefermentType];
+    lines.push(`• ${info.label[0].toUpperCase()+info.label.slice(1)}: ${fmtWeight(b.prefMass)}${wl}`);
+    lines.push(`• Flour: ${fmtWeight(b.FF)}${wl}`);
+    lines.push(`• Water: ${fmtWeight(b.FW)}${wl}`);
+    lines.push(`• Final dough yeast: ${fmtWeight(b.FY)}${wl}`);
+  } else if(st.cornmeal){
+    lines.push(`• Flour (all-purpose): ${fmtWeight(b.wheatFlourG)}${wl}`);
+    lines.push(`• Cornmeal: ${fmtWeight(b.cornmealG)}${wl}`);
+    lines.push(`• Water: ${fmtWeight(b.water_total)}${wl}`);
+    lines.push(`• ${state.leavenType==='fresh'?'Fresh':'Dry'} yeast: ${fmtWeight(b.yeastG)}${wl}`);
+  } else {
+    lines.push(`• Flour: ${fmtWeight(b.F)}${wl}`);
+    lines.push(`• Water: ${fmtWeight(b.water_total)}${wl}`);
+    lines.push(`• ${state.leavenType==='fresh'?'Fresh':'Dry'} yeast: ${fmtWeight(b.yeastG)}${wl}`);
+  }
+  lines.push(`• Salt: ${fmtWeight(b.saltG)}${wl}`);
+  lines.push(`• ${st.oil.label||'Oil'}: ${fmtWeight(b.oilG)}${wl}`);
+  if(state.sugar>0) lines.push(`• Sugar: ${fmtWeight(b.sugarG)}${wl}`);
+  if(!builderState.cart.length){
+    lines.push('', 'TOPPINGS', '(none added yet — visit the Builder tab to add a classic build)');
+  } else {
+    const scale = builderScale();
+    builderState.cart.forEach(c=>{
+      const build=BUILDS.find(x=>x.id===c.buildId);
+      lines.push('', `TOPPINGS — ${build.name} (× ${c.count})`);
+      build.ingredients.forEach(ing=>{
+        const perPizza = ing.unit==='leaves'||ing.unit==='pinch'||ing.unit==='sprig'||ing.unit==='cloves'||ing.unit==='clove'||ing.unit==='tsp'
+          ? Math.max(1, Math.round(ing.amt*scale))
+          : ing.amt*scale;
+        const totalAmt = perPizza*c.count;
+        const unitTxt = (ing.unit==='leaves'||ing.unit==='pinch'||ing.unit==='sprig'||ing.unit==='cloves'||ing.unit==='clove'||ing.unit==='tsp') ? ` ${ing.unit}` : weightUnitLabel();
+        const displayTotal = (ing.unit==='leaves'||ing.unit==='pinch'||ing.unit==='sprig'||ing.unit==='cloves'||ing.unit==='clove'||ing.unit==='tsp') ? totalAmt : fmtWeight(totalAmt);
+        lines.push(`• ${ing.label}: ${displayTotal}${unitTxt}`);
+      });
+    });
+  }
+  lines.push('', 'Generated by The Pizza Atlas');
+  return lines.join('\n');
+}
+document.getElementById('copyListBtn').addEventListener('click', ()=>copyText(buildShoppingListText()));
+
+function renderBuilder(){ renderBuilderBanner(); renderBuildGrid(); renderBuildDetail(); renderCart(); }
+document.getElementById('buildCount').addEventListener('change', renderBuildDetail);
+
 /* ============================= MAIN NAV / UNITS ============================= */
 document.getElementById('mainnav').addEventListener('click', e=>{
   const btn=e.target.closest('.navtab'); if(!btn) return;
@@ -1578,10 +1876,122 @@ function renderStorageModeNote(){
     : 'Saved to <b>this browser only</b> (no Claude account detected — likely self-hosted). It\'ll be here next time you open this page in this same browser, but won\'t follow you to another device or show up for other visitors. Use <b>Share</b> to copy an entry as text for anyone else.';
 }
 
+/* ============================= ASK AI (local LLM) ============================= */
+// This is opt-in and fully local: it only ever calls the URL the person themselves types
+// in below. There is no default endpoint, no bundled API key, and nothing here talks to
+// Anthropic, Claude, or any cloud service. If the fetch fails, that's between this browser
+// and whatever's (or isn't) running at that address.
+const aiState = { baseUrl:'', model:'', messages:[], busy:false };
+
+async function loadAISettings(){
+  const saved = await storeGet('settings:ai');
+  if(saved){ aiState.baseUrl = saved.baseUrl||''; aiState.model = saved.model||''; }
+  document.getElementById('aiBaseUrl').value = aiState.baseUrl;
+  document.getElementById('aiModel').value = aiState.model;
+}
+document.getElementById('aiSaveBtn').addEventListener('click', async ()=>{
+  aiState.baseUrl = document.getElementById('aiBaseUrl').value.trim().replace(/\/$/,'');
+  aiState.model = document.getElementById('aiModel').value.trim();
+  await storeSet('settings:ai', {baseUrl:aiState.baseUrl, model:aiState.model});
+  toast('Settings saved');
+});
+
+function setAIStatus(msg, isError){
+  const el=document.getElementById('aiStatus');
+  el.textContent = msg;
+  el.style.background = isError ? 'var(--tomato-soft)' : 'var(--basil-soft)';
+}
+
+document.getElementById('aiTestBtn').addEventListener('click', async ()=>{
+  const url = document.getElementById('aiBaseUrl').value.trim().replace(/\/$/,'');
+  if(!url){ setAIStatus('Enter a base URL first (e.g. http://localhost:1234/v1).', true); return; }
+  setAIStatus('Testing…', false);
+  try{
+    const res = await fetch(url+'/models', {method:'GET'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const names = (data.data||[]).map(m=>m.id).filter(Boolean);
+    setAIStatus(names.length ? `Connected. Models available: ${names.slice(0,4).join(', ')}${names.length>4?'…':''}` : 'Connected, but no models are loaded in the server yet.', false);
+  }catch(e){
+    setAIStatus('Could not reach that address. Check: the server is running, the URL/port is right, "Enable CORS" is on, and — if this page is on GitHub Pages talking to a local server — that your browser allows it (see note below; try Chrome or Safari if one blocks it).', true);
+  }
+});
+
+function buildWikiContext(){
+  const general = (document.getElementById('wtop-general')?.innerText || '').slice(0, 6000);
+  const styles = STYLE_ORDER.map(id=>{
+    const el = document.getElementById('styleguide-'+id);
+    return el ? el.innerText : '';
+  }).join('\n\n').slice(0, 8000);
+  return "You are a pizza-making assistant embedded in a web app called The Pizza Atlas. "
+    + "Answer using the reference material below where it's relevant. If asked something this material "
+    + "doesn't cover, say so plainly rather than inventing specifics, and give your best general guidance clearly labeled as such.\n\n"
+    + "=== GENERAL WIKI ===\n" + general
+    + "\n\n=== STYLE GUIDES ===\n" + styles;
+}
+
+function appendChatMsg(role, text){
+  aiState.messages.push({role, content:text});
+  renderChatLog();
+}
+function renderChatLog(){
+  const log = document.getElementById('aiChatLog');
+  log.innerHTML = aiState.messages.map(m=>{
+    const cls = m.role==='user' ? 'user' : (m.role==='error' ? 'error' : 'assistant');
+    return `<div class="chat-msg ${cls}"></div>`;
+  }).join('');
+  // set text via textContent (not innerHTML) so nothing the model outputs can ever be interpreted as markup
+  const nodes = log.querySelectorAll('.chat-msg');
+  aiState.messages.forEach((m,i)=>{ nodes[i].textContent = m.content; });
+  if(aiState.busy){
+    const div=document.createElement('div');
+    div.className='chat-msg thinking';
+    div.textContent='Thinking…';
+    log.appendChild(div);
+  }
+  log.scrollTop = log.scrollHeight;
+}
+async function sendAIMessage(){
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if(!text || aiState.busy) return;
+  const url = document.getElementById('aiBaseUrl').value.trim().replace(/\/$/,'');
+  if(!url){ setAIStatus('Enter and save a base URL first.', true); return; }
+  aiState.baseUrl = url;
+  input.value='';
+  appendChatMsg('user', text);
+  aiState.busy = true;
+  renderChatLog();
+  try{
+    const model = document.getElementById('aiModel').value.trim() || 'local-model';
+    const history = aiState.messages.filter(m=>m.role==='user'||m.role==='assistant').slice(-10);
+    const res = await fetch(url+'/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model,
+        messages: [{role:'system', content: buildWikiContext()}, ...history],
+        temperature: 0.6,
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    aiState.busy = false;
+    appendChatMsg('assistant', reply || '(The server responded but sent back no message content.)');
+  }catch(e){
+    aiState.busy = false;
+    appendChatMsg('error', 'Could not get a reply — is the local server running and reachable at '+url+'? (Check Test Connection above for details.)');
+  }
+}
+document.getElementById('aiSendBtn').addEventListener('click', sendAIMessage);
+document.getElementById('aiInput').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); sendAIMessage(); } });
+
 /* ============================= INIT ============================= */
 buildStyleWikiPages();
 switchStyle('neapolitan', true);
 renderStorageModeNote();
+loadAISettings();
 </script>
 </body>
 </html>
