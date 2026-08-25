@@ -2,7 +2,7 @@
 
 A free dough calculator, wiki, and personal recipe notebook for seven pizza styles — Neapolitan, New York, Roman Tonda, Roman al Taglio, Detroit, Sicilian, and Chicago Deep-Dish. It lives entirely in a single web page. No app to install, no account to create, no fee.
 
-**Live site:** `https://shatnero.github.io/pizza-atlas/` *(update this link once the site is deployed — see "Putting this online" below)*
+**Live site:** https://shatnero.github.io/pizza-atlas/
 
 ---
 
@@ -70,22 +70,6 @@ Open an **Issue** on this repository (see below) describing it. If you know how 
 **Is this "official" pizza information?**
 Only for Neapolitan, which has one real official standard (the AVPN). Every other style here is a best-effort, well-sourced home-kitchen adaptation of published books, test kitchens, and long-running pizza-making communities — see the in-app **Sources & Reading** page for exactly what backs each number.
 
----
-
-## Putting this online (for whoever owns this repository)
-
-If this repository doesn't have GitHub Pages turned on yet, here's the whole process — no coding, about two minutes:
-
-1. Go to this repository on GitHub and click **Settings**.
-2. In the left sidebar, click **Pages**.
-3. Under "Build and deployment" → "Source," choose **Deploy from a branch**.
-4. Under "Branch," choose **main** (or whichever branch has the code) and folder **/ (root)**, then click **Save**.
-5. GitHub will show a green banner with your live URL, usually `https://<your-username>.github.io/<repository-name>/`. It can take a minute or two to go live the first time.
-6. Update the "Live site" link at the top of this README with that URL.
-
-That's it — no build step, no server to manage. Any time the `index.html` file in this repo is updated, the live site updates automatically within a minute or two.
-
----
 
 ## For developers
 
